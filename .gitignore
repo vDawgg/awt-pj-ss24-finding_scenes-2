@@ -1,0 +1,15 @@
+# Ignore everything in the videos directory
+/videos/*
+
+# But don't ignore .gitkeep files
+!/videos/*.gitkeep
+
+# Ignore idea settings
+.idea/
+
+# Ignore python cache in all directories
+__pycache__/
+video/__pycache__/
+
+# Ignore venv
+venv/

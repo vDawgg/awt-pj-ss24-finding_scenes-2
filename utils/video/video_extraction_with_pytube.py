@@ -39,6 +39,7 @@ def download_video_and_subtitles(url: str, output_path=VIDEO_DIR) -> Union[Tuple
 
             if subtitles:
                 return output_path+video.default_filename, subtitles.generate_srt_captions()
+
         else:
             print("No video found with mp4 format.")
     except Exception as e:
@@ -48,4 +49,3 @@ def download_video_and_subtitles(url: str, output_path=VIDEO_DIR) -> Union[Tuple
 if __name__ == "__main__":
     path, subtitles = download_video_and_subtitles("https://www.youtube.com/watch?v=5C_HPTJg5ek")
     print(subtitles)
-

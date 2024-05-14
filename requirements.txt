@@ -10,3 +10,5 @@ scenedetect==0.6.3
 six==1.16.0
 tqdm==4.66.4
 tzdata==2024.1
+moviepy==1.0.3
+imageio==2.25.1

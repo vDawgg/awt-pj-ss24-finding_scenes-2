@@ -2,7 +2,7 @@
 
 ## Setup
 
-To install the project's dependencies, you can simply run the following command in your terminal:
+To install the project's dependencies, run the following command in your terminal:
 
 ```bash
 pip install -r requirements.txt

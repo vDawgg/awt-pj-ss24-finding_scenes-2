@@ -7,6 +7,10 @@ import os
 from typing import Optional
 from Katna.video import Video
 from Katna.writer import KeyFrameDiskWriter
+from katna_custom.custom_writer import TimeStampDiskWriter
+from katna_custom.custom_video_extraction import CustomVideo
+from katna_custom.custom_frame_extractor import CustomFrameExtractor
+from katna_custom.custom_image_selector import CustomImageSelector
 
 
 # TODO currently not supporting Windows OS multiprocessing
@@ -36,17 +40,21 @@ def keyframe_extraction(
     os.makedirs(video_keyframes_dir, exist_ok=True)
 
     # Initialize video module
-    vd = Video()
+    vd = CustomVideo()
 
     # Initialize diskwriter to save data at desired location
-    diskwriter = KeyFrameDiskWriter(location=video_keyframes_dir)
-
+    frame_diskwriter = KeyFrameDiskWriter(location=video_keyframes_dir)
+    timestamp_diskwriter = TimeStampDiskWriter(location=video_keyframes_dir)
+    
     print(f"Input video file path = {video_file_path}")
+
 
     # Extract keyframes and process data with diskwriter
     vd.extract_video_keyframes(
-        no_of_frames=no_of_frames_to_return, file_path=video_file_path,
-        writer=diskwriter
+        no_of_frames=no_of_frames_to_return, 
+        file_path=video_file_path,
+        frame_writer=frame_diskwriter,
+        timestamp_writer=timestamp_diskwriter
     )
 
 
@@ -78,3 +86,9 @@ if __name__ == "__main__":
         directory="videos/video_scenes",
         output_dir="videos/keyframes"
     )
+
+    # keyframe_extraction(
+    #     video_file_path="/home/limin/Documents/programming/finding_scenes_in_learning_videos/awt-pj-ss24-finding_scenes-2/videos/video_scenes/Rust in 100 Seconds-Scene-001.mp4",
+    #     no_of_frames_to_return=12,
+    #     output_dir="videos/keyframes"
+    # )

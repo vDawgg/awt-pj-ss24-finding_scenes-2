@@ -7,6 +7,7 @@ from Katna.writer import KeyFrameDiskWriter
 from katna_custom.custom_writer import TimeStampDiskWriter
 from katna_custom.custom_video_extraction import CustomVideo
 
+from utils.video.create_keyframes_csv import create_keyframes_csv
 
 # TODO currently not supporting Windows OS multiprocessing
 def keyframe_extraction(
@@ -118,6 +119,8 @@ if __name__ == "__main__":
         output_dir="videos/keyframes",
         no_of_frames_to_return=12
     )
+
+    create_keyframes_csv()
 
     # process_all_videos_in_directory(
     #     directory="videos/video_scenes",

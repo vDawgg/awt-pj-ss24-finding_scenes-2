@@ -2,6 +2,7 @@ import glob
 import pandas as pd
 import datetime
 
+
 def create_keyframes_csv(
     keyframes_csv_input_dir: str = "videos/keyframes",
     scenes_csv_input_file: str = "videos/video_scenes/scene_list.csv",

@@ -45,4 +45,4 @@ merged_df['Global Timestamp (s)'] = merged_df['Start Time (seconds)'] + merged_d
 # Select only the desired columns from the merged DataFrame
 final_df = merged_df[['Index', 'Filename', 'Origin Filename', 'Timestamp Local', 'Timestamp Local (s)', 'Global Timestamp (s)','Start Time (seconds)']]
 # Write the final DataFrame to a new CSV file
-final_df.to_csv('videos/keyframes/extracted_keyframes.csv', index=False, columns=['Index', 'Filename', 'Origin Filename', 'Timestamp Local', 'Timestamp Local (s)', 'Global Timestamp (s)', 'Start Time (seconds)'])
+final_df.to_csv('videos/keyframes/extracted_keyframes.csv', index=False, columns=['Filename', 'Origin Filename', 'Timestamp Local', 'Timestamp Local (s)', 'Global Timestamp (s)', 'Start Time (seconds)'])

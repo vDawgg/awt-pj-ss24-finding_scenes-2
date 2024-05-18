@@ -1,10 +1,10 @@
 from __future__ import print_function
 
 import numpy as np
-import itertools  
+import itertools
 from multiprocessing import Pool
-import Katna.config as config
 
+import Katna.config as config
 from Katna.image_selector import ImageSelector
 
 

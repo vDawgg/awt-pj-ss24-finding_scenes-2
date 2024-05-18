@@ -1,40 +1,14 @@
-import os
+import functools
+import operator
+from multiprocessing import Pool
 
 from Katna.video import Video
 from Katna.decorators import FileDecorators
 import Katna.config as config
-
-
-import os.path
-import os
-import psutil
-import sys
-import math
-import numpy as np
-import cv2
-import errno
-import ntpath
-from Katna.decorators import VideoDecorators
-from Katna.decorators import FileDecorators
-
-# from Katna.frame_extractor import FrameExtractor
-from katna_custom.custom_frame_extractor import CustomFrameExtractor as FrameExtractor
-# from Katna.image_selector import ImageSelector
-from katna_custom.custom_image_selector import CustomImageSelector as ImageSelector
-from Katna.mediapipe import MediaPipeAutoFlip
-import Katna.config as config
-from Katna.video_compressor import VideoCompressor
 import Katna.helper_functions as helper
 
-import Katna.config as config
-import subprocess
-import re
-import ffmpy
-from imageio_ffmpeg import get_ffmpeg_exe
-from multiprocessing import Pool, Process, cpu_count
-import functools
-import operator
-import csv
+from katna_custom.custom_frame_extractor import CustomFrameExtractor as FrameExtractor
+from katna_custom.custom_image_selector import CustomImageSelector as ImageSelector
 
 
 class CustomVideo(Video):

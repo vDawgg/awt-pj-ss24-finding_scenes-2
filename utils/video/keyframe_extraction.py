@@ -1,16 +1,10 @@
 import os
 import glob
-
-from Katna.video import Video
-from Katna.writer import KeyFrameDiskWriter
-import os
 from typing import Optional
-from Katna.video import Video
+
 from Katna.writer import KeyFrameDiskWriter
 from katna_custom.custom_writer import TimeStampDiskWriter
 from katna_custom.custom_video_extraction import CustomVideo
-from katna_custom.custom_frame_extractor import CustomFrameExtractor
-from katna_custom.custom_image_selector import CustomImageSelector
 
 
 # TODO currently not supporting Windows OS multiprocessing

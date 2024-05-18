@@ -1,4 +1,5 @@
 import os
+import csv
 import glob
 from typing import Optional
 
@@ -42,17 +43,53 @@ def keyframe_extraction(
     
     print(f"Input video file path = {video_file_path}")
 
-
     # Extract keyframes and process data with diskwriter
     vd.extract_video_keyframes(
-        no_of_frames=no_of_frames_to_return, 
+        no_of_frames=no_of_frames_to_return,
         file_path=video_file_path,
         frame_writer=frame_diskwriter,
         timestamp_writer=timestamp_diskwriter
     )
 
 
-def process_all_videos_in_directory(directory: str, output_dir: str):
+def process_all_videos_in_csv(
+    csv_file_path: str, 
+    output_dir: str, 
+    no_of_frames_to_return: int = 1
+):
+    """
+    Process all videos in a csv file and extract keyframes from each video.
+
+    Args:
+    csv_file_path (str): The path to the csv file containing the video files.
+    output_dir (str): The directory to save the keyframes.
+
+    Returns:
+    None
+    """
+
+    input_video_dir = os.path.dirname(csv_file_path)
+
+    video_files = []
+    # Read the csv file
+    with open(csv_file_path, "r") as f:
+        reader = csv.DictReader(f)
+        video_files = [row["file_name"] for row in reader]
+
+    # Apply keyframe_extraction to each video file
+    for video_file in video_files:
+        keyframe_extraction(
+            video_file_path=os.path.join(input_video_dir, video_file),
+            no_of_frames_to_return=no_of_frames_to_return,
+            output_dir=output_dir
+        )
+
+
+def process_all_videos_in_directory(
+        directory: str, 
+        output_dir: str, 
+        no_of_frames_to_return: int = 1
+):
     """
     Process all videos in a directory and extract keyframes from each video.
 
@@ -70,16 +107,23 @@ def process_all_videos_in_directory(directory: str, output_dir: str):
     for video_file in video_files:
         keyframe_extraction(
             video_file_path=video_file,
-            no_of_frames_to_return=12,
+            no_of_frames_to_return=no_of_frames_to_return,
             output_dir=output_dir
         )
 
 
 if __name__ == "__main__":
-    process_all_videos_in_directory(
-        directory="videos/video_scenes",
-        output_dir="videos/keyframes"
+    process_all_videos_in_csv(
+        csv_file_path="videos/video_scenes/scene_list.csv",
+        output_dir="videos/keyframes",
+        no_of_frames_to_return=12
     )
+
+    # process_all_videos_in_directory(
+    #     directory="videos/video_scenes",
+    #     output_dir="videos/keyframes",
+    #     no_of_frames_to_return=3
+    # )
 
     # keyframe_extraction(
     #     video_file_path="/home/limin/Documents/programming/finding_scenes_in_learning_videos/awt-pj-ss24-finding_scenes-2/videos/video_scenes/Rust in 100 Seconds-Scene-001.mp4",

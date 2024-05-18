@@ -42,14 +42,17 @@ def create_keyframes_csv(
 
     # Convert 'Start Timecode' to seconds
     df1['Start Time (seconds)'] = df1['Start Timecode'].apply(timecode_to_seconds)
-    df1.rename(columns={'file_name': 'Origin Filename'}, inplace=True)
+    df1.rename(columns={'file_name': 'Source Filename'}, inplace=True)
     # Merge the combined DataFrame with the scenes DataFrame on the 'Filename' column
-    merged_df = pd.merge(combined_df, df1, on='Origin Filename')
+    merged_df = pd.merge(combined_df, df1, on='Source Filename')
 
     # Calculate the global timestamp
     merged_df['Global Timestamp (s)'] = merged_df['Start Time (seconds)'] + merged_df['Timestamp Local (s)']
 
     # Select only the desired columns from the merged DataFrame
-    final_df = merged_df[['Index', 'Filename', 'Origin Filename', 'Timestamp Local', 'Timestamp Local (s)', 'Global Timestamp (s)','Start Time (seconds)']]
+    final_df = merged_df[['Index', 'Filename', 'Source Filename', 'Timestamp Local', 'Timestamp Local (s)', 'Global Timestamp (s)','Start Time (seconds)', 'End Time (seconds)']]
+    final_df.rename(columns={'Start Time (seconds)': 'Scene Start Time Global (s)'}, inplace=True)
+    final_df.rename(columns={'End Time (seconds)': 'Scene End Time Global (s)'}, inplace=True)
+
     # Write the final DataFrame to a new CSV file
-    final_df.to_csv(output_file, index=False, columns=['Filename', 'Origin Filename', 'Timestamp Local', 'Timestamp Local (s)', 'Global Timestamp (s)', 'Start Time (seconds)'])
+    final_df.to_csv(output_file, index=False, columns=['Filename', 'Source Filename', 'Timestamp Local', 'Timestamp Local (s)', 'Global Timestamp (s)', 'Scene Start Time Global (s)', 'Scene End Time Global (s)'])

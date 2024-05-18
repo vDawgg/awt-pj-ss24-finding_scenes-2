@@ -120,7 +120,11 @@ if __name__ == "__main__":
         no_of_frames_to_return=12
     )
 
-    create_keyframes_csv()
+    create_keyframes_csv(
+        keyframes_csv_input_dir="videos/keyframes",
+        scenes_csv_input_file="videos/video_scenes/scene_list.csv",
+        output_file="videos/keyframes/extracted_keyframes.csv"
+    )
 
     # process_all_videos_in_directory(
     #     directory="videos/video_scenes",

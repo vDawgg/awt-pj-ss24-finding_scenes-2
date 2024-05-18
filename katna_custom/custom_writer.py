@@ -21,7 +21,7 @@ class TimeStampDiskWriter(Writer):
         file_full_path = os.path.join(self.output_dir_path, file_name + self.file_ext)
         with open(file_full_path, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow(['Index', 'Filename', 'Origin Filename', 'Timestamp Local', 'Timestamp Local (s)'])
+            writer.writerow(['Index', 'Filename', 'Source Filename', 'Timestamp Local', 'Timestamp Local (s)'])
             for i, timestamp in enumerate(timestamps):
                 writer.writerow([i, f"{file_name}_{i}.jpeg", f"{file_name}.mp4", timestamp, timestamp / 1000])
 

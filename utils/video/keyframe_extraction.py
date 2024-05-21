@@ -117,7 +117,7 @@ if __name__ == "__main__":
     process_all_videos_in_csv(
         csv_file_path="videos/video_scenes/scene_list.csv",
         output_dir="videos/keyframes",
-        no_of_frames_to_return=12
+        no_of_frames_to_return=1
     )
 
     create_keyframes_csv(

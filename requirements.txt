@@ -1,0 +1,12 @@
+click==8.1.7
+numpy==1.26.4
+opencv-python==4.9.0.80
+pandas==2.2.2
+platformdirs==4.2.1
+python-dateutil==2.9.0.post0
+pytube @ git+https://github.com/Rasmy000/pytube.git@5cea63e241898a4195627d5001d13029afcceab5
+pytz==2024.1
+scenedetect==0.6.3
+six==1.16.0
+tqdm==4.66.4
+tzdata==2024.1

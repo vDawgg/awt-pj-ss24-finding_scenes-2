@@ -1,8 +1,15 @@
 # awt-pj-ss24-finding_scenes-2
 
 ## Setup
-To install the projects dependencies run
-`pip install -r requirements.txt`
+
+
+To install the project's dependencies, run the following command in your terminal:
+
+```bash
+pip install -r requirements.txt
+```
+
+
 
 As with most python projects we recommend setting up a [virtual environment](https://docs.python.org/3/library/venv.html).
 
@@ -17,3 +24,17 @@ To install the non python dependencies of the project run the following, dependi
 ### Ubuntu
 
 `sudo apt-get install ffmpeg`
+
+
+
+```bash
+apt install imagemagick
+```
+
+Additionally, ensure ImageMagick permissions are properly configured by running:
+
+```bash
+cat /etc/ImageMagick-6/policy.xml | sed 's/none/read,write/g'> /etc/ImageMagick-6/policy.xml
+```
+=======
+

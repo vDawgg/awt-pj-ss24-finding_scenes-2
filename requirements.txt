@@ -33,3 +33,4 @@ scikit-learn==1.4.2
 scipy==1.13.0
 threadpoolctl==3.5.0
 tifffile==2024.5.10
+pysrt==1.1.2

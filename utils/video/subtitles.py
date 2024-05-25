@@ -1,33 +1,25 @@
 import os
 import tempfile
+from typing import Union
+from numpy import void
 import pysrt
-from datetime import timedelta
-
-from keyframe_extraction import process_all_videos_in_csv,create_keyframes_csv
+from video_extraction_with_pytube import YouTubeVideo
+import pandas as pd
 
 from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip
 
 
-def open_srt_from_string(srt_string: str) -> pysrt.SubRipFile:
-    # Create a temporary file and write the SRT string data to it
-    with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
-        temp_file.write(srt_string)
-
-    # Close the file to release the resources
-    temp_file.close()
-
-    # Open the temporary file with pysrt
-    subtitles = pysrt.open(temp_file.name)
-
-    # Delete the temporary file
-    os.unlink(temp_file.name)
-
-    return subtitles
+import os
+import tempfile
+import pysrt
 
 
 
 def time_to_seconds(time_object: pysrt.SubRipItem)-> int:
     return time_object.hours * 3600 + time_object.minutes * 60 + time_object.seconds + time_object.milliseconds / 1000
+
+def time_to_milliseconds(time_object: pysrt.SubRipItem) -> int:
+    return (time_object.hours * 3600 * 1000 + time_object.minutes * 60 * 1000 + time_object.seconds * 1000 + time_object.milliseconds)
 
 
 def create_video_with_subtitles(subtitles_srt: str,path: str,fontsize:int=24, font: str='Arial', color: str='yellow', debug :bool = False, bg_color:str="black")-> str:
@@ -48,7 +40,7 @@ def create_video_with_subtitles(subtitles_srt: str,path: str,fontsize:int=24, fo
     :returns: The path of the output video file.
     """
     # Parse subtitles from SRT string
-    subtitles=open_srt_from_string(subtitles_srt)
+    subtitles=subtitles = pysrt.from_string(subtitles_srt)
     video = VideoFileClip(path)     
     begin,_= path.split(".mp4")
     
@@ -87,29 +79,64 @@ def create_video_with_subtitles(subtitles_srt: str,path: str,fontsize:int=24, fo
 
     return output_video_path
 
-def search_subtitle(subtitles_srt, timestamp_seconds):
+def search_subtitle(srt_string: str, timestamp_seconds: int)-> Union[str, None]:
     """Search for a subtitle by timestamp in seconds in an SRT file."""
-    subs= open_srt_from_string(subtitles_srt)
+    subs= pysrt.from_string(srt_string)
 
     for sub in subs:
-        start_time = time_to_seconds(sub.start)
-        end_time = time_to_seconds(sub.end)
+        start_time = time_to_milliseconds(sub.start)
+        end_time = time_to_milliseconds(sub.end)
         
         if start_time <= timestamp_seconds <= end_time:
             return sub.text
 
     return None     
 
+def save_subtitle_in_csv(srt_string:str,input_path_csv:str)-> void:
+   """
+    Adds subtitles to the corresponding timestamps in a CSV file and saves the updated CSV.
 
+    This function takes a string containing subtitles in SubRip (SRT) format and the file path
+    of a CSV file. It matches the subtitles to the corresponding timestamps in the CSV file
+    and saves the updated CSV with the added subtitle information.
+
+    :param srt_string: A string containing the subtitles in SubRip (SRT) format.
+    :param input_path_csv: The file path of the CSV file to which subtitles need to be added.
+    :rtype: void
+   """
+
+   df = pd.read_csv(input_path_csv)
+   subtitles_list = []
+
+   # Iterate through each row and find the corresponding subtitle
+   for index, row in df.iterrows():
+     global_timestamp_ms = row['Timestamp Global (ms)']
+     subtitle = search_subtitle(srt_string, global_timestamp_ms)
+     subtitles_list.append(subtitle)
+
+   # Add the subtitles list as a new column to the DataFrame
+   df['Subtitle'] = subtitles_list
+
+   # Print the updated DataFrame
+   print(df)
+   # Put subtitles in csv
+   df.to_csv(input_path_csv, index=False)
+
+    
 if __name__ == "__main__":
-    process_all_videos_in_csv(
-        csv_file_path="videos/video_scenes/scene_list.csv",
-        output_dir="videos/keyframes",
-        no_of_frames_to_return=1
-    )
-
-    create_keyframes_csv(
-        keyframes_csv_input_dir="videos/keyframes",
-        scenes_csv_input_file="videos/video_scenes/scene_list.csv",
-        output_file="videos/keyframes/extracted_keyframes.csv"
-    )
+   downloader = YouTubeVideo("https://www.youtube.com/watch?v=2s6mIboARCM")
+   path, subtitles = downloader.download_video_and_subtitles()
+   print(subtitles)
+   save_subtitle_in_csv(subtitles,"videos/keyframes/extracted_keyframes.csv")
+   df = pd.read_csv("videos/keyframes/extracted_keyframes.csv")
+   for index, row in df.iterrows():
+     global_timestamp_ms = row['Timestamp Global (ms)']
+     global_timestamp_hhmmss = row['Timestamp Global (hh:mm:ss.SSS)']
+     filename = row['Filename']
+     subtitle=search_subtitle(subtitles,global_timestamp_ms)
+     print(f"Row {index}:")
+     print(f"  Filename: {filename}")
+     print(f"  Global Timestamp (ms): {global_timestamp_ms}")
+     print(f"  Global Timestamp (hh:mm:ss.SSS): {global_timestamp_hhmmss}")
+     print(f"  Subtitle: {subtitle}\n")
+       

@@ -40,7 +40,7 @@ def create_video_with_subtitles(subtitles_srt: str,path: str,fontsize:int=24, fo
     :returns: The path of the output video file.
     """
     # Parse subtitles from SRT string
-    subtitles=subtitles = pysrt.from_string(subtitles_srt)
+    subtitles=pysrt.from_string(subtitles_srt)
     video = VideoFileClip(path)     
     begin,_= path.split(".mp4")
     

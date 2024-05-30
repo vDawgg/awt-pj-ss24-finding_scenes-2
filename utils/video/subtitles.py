@@ -70,7 +70,7 @@ def create_video_with_subtitles(subtitles_srt: str,path: str,fontsize:int=24, fo
     return output_video_path
 
 def search_subtitle(srt_string: str, timestamp_seconds: int)-> Union[str, None]:
-    """Search for a subtitle by timestamp in seconds in an SRT file."""
+    """Search for a subtitle by timestamp in seconds in a SRT string ."""
     subs= pysrt.from_string(srt_string)
 
     for sub in subs:

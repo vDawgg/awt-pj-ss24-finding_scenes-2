@@ -82,7 +82,7 @@ def search_subtitle(srt_string: str, timestamp_seconds: int)-> Union[str, None]:
 
     return None     
 
-def save_subtitle_in_csv(srt_string:str,input_path_csv:str)-> None:
+def save_subtitle_in_csv(srt_string:str,input_path_csv:str)-> str:
    """
     Adds subtitles to the corresponding timestamps in a CSV file and saves the updated CSV.
 
@@ -111,6 +111,8 @@ def save_subtitle_in_csv(srt_string:str,input_path_csv:str)-> None:
    print(df)
    # Put subtitles in csv
    df.to_csv(input_path_csv, index=False)
+
+   return input_path_csv
 
     
 if __name__ == "__main__":

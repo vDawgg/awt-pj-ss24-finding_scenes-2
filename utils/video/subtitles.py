@@ -118,7 +118,8 @@ def save_subtitle_in_csv(srt_string:str,input_path_csv:str)-> str:
 if __name__ == "__main__":
    downloader = YouTubeVideo("https://www.youtube.com/watch?v=2s6mIboARCM")
    path, subtitles = downloader.download_video_and_subtitles()
-
+   # Scene extraction
+   # Keyframe extraction
    save_subtitle_in_csv(subtitles,"videos/keyframes/extracted_keyframes.csv")
    df = pd.read_csv("videos/keyframes/extracted_keyframes.csv")
    for index, row in df.iterrows():

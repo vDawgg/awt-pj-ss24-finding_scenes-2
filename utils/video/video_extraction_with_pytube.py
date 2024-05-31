@@ -1,7 +1,7 @@
 from typing import List, Tuple, Union
 from pytube import YouTube
 from constants import VIDEO_DIR
-
+import os.path
 
 class YouTubeVideo:
     def __init__(self, url: str, output_path: str = VIDEO_DIR):
@@ -40,7 +40,7 @@ class YouTubeVideo:
                 subtitles = yt.captions[caption_key]
 
                 if subtitles:
-                    return self.output_path + video.default_filename, subtitles.generate_srt_captions()
+                    return os.path.join(self.output_path, video.default_filename), subtitles.generate_srt_captions()
 
             else:
                 print("No video found with mp4 format.")

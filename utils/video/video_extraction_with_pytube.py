@@ -1,6 +1,7 @@
 from typing import List, Tuple, Union
 from pytube import YouTube
 from utils.video.constants import VIDEO_DIR
+import os
 
 
 class YouTubeVideo:

@@ -1,7 +1,7 @@
 from typing import List, Tuple, Union
 from pytube import YouTube
-from constants import VIDEO_DIR
-import os.path
+from utils.video.constants import VIDEO_DIR
+
 
 class YouTubeVideo:
     def __init__(self, url: str, output_path: str = VIDEO_DIR):

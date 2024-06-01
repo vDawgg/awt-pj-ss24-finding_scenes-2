@@ -39,7 +39,7 @@ def get_scenes(video_path: str) -> str:
     df.to_csv(scene_list_csv, index=False)
 
     print("Done\n")
-    return scene_dir
+    return scene_list_csv
 
 
 if __name__ == '__main__':

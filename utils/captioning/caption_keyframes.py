@@ -1,11 +1,9 @@
 import os
 from typing import List
-
 from PIL import Image
 import pandas as pd
-from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from utils.video.keyframe_captioning.model import Model
+from utils.captioning.model import CaptionModel
 
 
 def get_column_values(csv_file: str, column_name: str) -> List[str]:
@@ -20,7 +18,7 @@ def get_filepaths_from_csv(csv_file: str, filename_column: str, directory: str =
     return full_filepaths
 
 
-def caption_images(model: Model, base_prompt: str, tasks, csv_file: str = "extracted_keyframes.csv", filename_column: str = 'Filename', directory: str = "videos/keyframes") -> str:
+def caption_images(model: CaptionModel, base_prompt: str, tasks, csv_file: str = "extracted_keyframes.csv", filename_column: str = 'Filename', directory: str = "videos/keyframes") -> str:
     """
     Caption the images using the provided model and prompt.
 
@@ -67,7 +65,7 @@ if __name__ == "__main__":
 
     model_id = "vikhyatk/moondream2"
     revision = "2024-05-20"
-    model = Model(model_id, revision)
+    model = CaptionModel(model_id, revision)
 
     task_list = [
         "Generate detailed information for this scene for TASK - instructions on what exactly to capture.",

@@ -3,6 +3,7 @@ from typing import Union
 import pandas as pd
 from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip
 from video_extraction_with_pytube import YouTubeVideo
+import unicodedata
 
 
 def time_to_seconds(time_object: pysrt.SubRipItem)-> int:
@@ -68,7 +69,6 @@ def create_video_with_subtitles(subtitles_srt: str,path: str,fontsize:int=24, fo
     final_video.write_videofile(output_video_path)
 
     return output_video_path
-
 def search_subtitle(srt_string: str, timestamp_seconds: int)-> Union[str, None]:
     """Search for a subtitle by timestamp in seconds in a SRT string ."""
     subs= pysrt.from_string(srt_string)
@@ -78,7 +78,9 @@ def search_subtitle(srt_string: str, timestamp_seconds: int)-> Union[str, None]:
         end_time = time_to_milliseconds(sub.end)
         
         if start_time <= timestamp_seconds <= end_time:
-            return sub.text
+            # Remove non-printable Unicode characters
+            clean_text = ''.join(c for c in sub.text if unicodedata.category(c)[0] != 'C')
+            return clean_text
 
     return None     
 
@@ -113,6 +115,7 @@ def save_subtitle_in_csv(srt_string:str,input_path_csv:str)-> str:
    df.to_csv(input_path_csv, index=False)
 
    return input_path_csv
+ 
 
     
 if __name__ == "__main__":
@@ -120,6 +123,7 @@ if __name__ == "__main__":
    path, subtitles = downloader.download_video_and_subtitles()
    # Scene extraction
    # Keyframe extraction
+   print(subtitles)
    save_subtitle_in_csv(subtitles,"videos/keyframes/extracted_keyframes.csv")
    df = pd.read_csv("videos/keyframes/extracted_keyframes.csv")
    for index, row in df.iterrows():

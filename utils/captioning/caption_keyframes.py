@@ -20,7 +20,7 @@ def get_filepaths_from_csv(csv_file: str, filename_column: str, directory: str =
     return full_filepaths
 
 
-def caption_images(model: Model, base_prompt: str, tasks, csv_file: str = "extracted_keyframes.csv", filename_column: str = 'Filename', directory: str = "videos/keyframes") -> None:
+def caption_images(model: Model, base_prompt: str, tasks, csv_file: str = "extracted_keyframes.csv", filename_column: str = 'Filename', directory: str = "videos/keyframes") -> str:
     """
     Caption the images using the provided model and prompt.
 

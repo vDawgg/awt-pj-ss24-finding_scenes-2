@@ -42,12 +42,12 @@ def caption_images(model: Model, base_prompt: str, tasks, csv_file: str = "extra
     for filepath, subtitle in zip(full_filepaths, subtitle_list):
         image = Image.open(filepath)
         enc_image = model.encode_image(image)
-        generated_captions = []
+        task_responses = {}
         for task in tasks:
             prompt = f"{base_prompt} \nSUBTITLES: {subtitle}\nTASK: {task}"
             prompt_response = model.run_inference(enc_image, prompt)
-            generated_captions.append(prompt_response)
-        caption_list.append(generated_captions)
+            task_responses[task] = prompt_response
+        caption_list.append(task_responses)
 
 
     csv_filepath = os.path.join(directory, csv_file)
@@ -70,9 +70,10 @@ if __name__ == "__main__":
     model = Model(model_id, revision)
 
     task_list = [
-        "Generate detailed information for this scene for TASK - instructions on what exactly to capture.",
-        "What is the language of the scene",
-        "What kind of scene is this",
+        "Caption the scene. Describe it with as much information as possible."
+        "Generate detailed information for this scene for this scene.",
+        "What is the language used in the video this keyframe was captured from?",
+        "What kind of video is this, is it a tutorial, a lecture, and the likes.",
     ]
 
     prompt = f"""
@@ -82,10 +83,10 @@ if __name__ == "__main__":
     If the TASK cannot be completed, then return "NONE".
     """.strip()
 
-    caption_images(
+    csv_filepath = caption_images(
         model=model,
         base_prompt=prompt,
         tasks=task_list,
-        directory=directory
+        directory=directory,
+        csv_file=csv_filepath
     )
-

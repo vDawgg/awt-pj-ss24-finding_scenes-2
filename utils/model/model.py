@@ -33,13 +33,13 @@ def init_model(model_id: str, cache_dir: str = "./model_cache", **kwargs) -> Tup
     if not os.path.exists(os.path.join(model_dir, 'pytorch_model.bin')):
         # Model is not saved locally, download and save it
         model = AutoModelForCausalLM.from_pretrained(
-            model_id, kwargs, trust_remote_code=True, token=HF_TOKEN, torch_dtype=torch_type
+            model_id, trust_remote_code=True, torch_dtype=torch_type, token=HF_TOKEN, **kwargs
         )
         tokenizer = AutoTokenizer.from_pretrained(model_id, revision=revision)
     else:
         # Load the model and tokenizer from the local disk
         model = AutoModelForCausalLM.from_pretrained(
-            model_dir, kwargs, torch_dtype=torch_type,  # TODO: Check whether this still works with moondream
+            model_dir, torch_dtype=torch_type, **kwargs  # TODO: Check whether this still works with moondream
         )
         tokenizer = AutoTokenizer.from_pretrained(model_dir)
 

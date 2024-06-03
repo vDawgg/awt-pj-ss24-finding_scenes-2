@@ -54,10 +54,10 @@ if __name__ == "__main__":
     image_url = "https://llava-vl.github.io/static/images/view.jpg"
     image = Image.open(requests.get(image_url, stream=True).raw)
 
-    model = Model(model_id, revision)
+    model = CaptionModel(model_id, revision=revision)
 
     enc_image = model.encode_image(image)
 
-    prompt_response = model.inference(enc_image, model.prompt)
+    prompt_response = model.run_inference(enc_image, model.prompt)
 
     print(prompt_response)

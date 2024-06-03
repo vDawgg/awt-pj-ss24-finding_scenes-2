@@ -48,7 +48,7 @@ def init_model(model_id: str, cache_dir: str = "./model_cache", **kwargs) -> Tup
 
 
 class Model:
-    def __init__(self, model_id: str, revision: str):
+    def __init__(self, model_id: str, **kwargs):
         """
         Initializes a Model object.
 
@@ -57,6 +57,5 @@ class Model:
             revision (str): The revision of the model.
         """
         self.model_id = model_id
-        self.revision = revision
-        self.model, self.tokenizer = init_model(model_id, revision)
+        self.model, self.tokenizer = init_model(model_id, **kwargs)
         self.prompt = ""

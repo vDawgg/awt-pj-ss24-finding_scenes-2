@@ -90,8 +90,8 @@ def process_all_videos_in_csv(
 
 
 def process_all_videos_in_directory(
-        directory: str, 
-        output_dir: str = KEYFRAME_DIR, 
+        directory: str,
+        output_dir: str = KEYFRAME_DIR,
         no_of_frames_to_return: int = 1
 ):
     """

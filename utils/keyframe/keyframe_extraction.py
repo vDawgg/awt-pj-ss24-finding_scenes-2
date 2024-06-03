@@ -1,6 +1,7 @@
 import os
 import csv
 import glob
+import time
 from typing import Optional
 
 from Katna.writer import KeyFrameDiskWriter
@@ -8,7 +9,7 @@ from katna_custom.custom_writer import TimeStampDiskWriter
 from katna_custom.custom_video_extraction import CustomVideo
 
 from utils.keyframe.csv_creation import create_csv
-import time
+from .constants import KEYFRAME_DIR
 
 
 # TODO currently not supporting Windows OS multiprocessing
@@ -57,7 +58,7 @@ def extract_keyframe(
 
 def process_all_videos_in_csv(
     csv_file_path: str, 
-    output_dir: str, 
+    output_dir: str = KEYFRAME_DIR, 
     no_of_frames_to_return: int = 1
 ):
     """
@@ -90,7 +91,7 @@ def process_all_videos_in_csv(
 
 def process_all_videos_in_directory(
         directory: str, 
-        output_dir: str, 
+        output_dir: str = KEYFRAME_DIR, 
         no_of_frames_to_return: int = 1
 ):
     """
@@ -117,7 +118,7 @@ def process_all_videos_in_directory(
 
 def generate_keyframes_from_scenes(
     scenes_csv_input_file: str,
-    output_dir: str,
+    output_dir: str = KEYFRAME_DIR,
     no_of_frames_to_return: int = 1
 ):
     """
@@ -154,7 +155,6 @@ if __name__ == "__main__":
 
     keyframe_csv_path = generate_keyframes_from_scenes(
         scenes_csv_input_file="videos/video_scenes/scene_list.csv",
-        output_dir="videos/keyframes",
         no_of_frames_to_return=1
     )
 

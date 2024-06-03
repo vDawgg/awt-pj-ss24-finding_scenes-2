@@ -33,8 +33,9 @@ def caption_images(model: CaptionModel, base_prompt: str, tasks, csv_file: str =
         None
     """
 
+    csv_filepath = os.path.join(directory, csv_file)
     full_filepaths = get_filepaths_from_csv(csv_file, filename_column, directory)
-    subtitle_list = get_column_values(csv_file, 'Subtitle')
+    subtitle_list = get_column_values(csv_filepath, 'Subtitle')
     caption_list = []
 
     for filepath, subtitle in zip(full_filepaths, subtitle_list):
@@ -47,8 +48,6 @@ def caption_images(model: CaptionModel, base_prompt: str, tasks, csv_file: str =
             generated_captions.append(prompt_response)
         caption_list.append(generated_captions)
 
-
-    csv_filepath = os.path.join(directory, csv_file)
     df = pd.read_csv(csv_filepath)
     df["Caption"] = caption_list
     df.to_csv(csv_filepath, index=True)

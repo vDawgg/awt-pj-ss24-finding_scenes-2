@@ -1,6 +1,7 @@
+import os
 import glob
+
 import pandas as pd
-import datetime
 
 
 def generate_csv_file_paths(
@@ -16,7 +17,7 @@ def generate_csv_file_paths(
     list: A list of all CSV files in the specific keyframe folders.
     """
     # Get a list of all CSV files in the specific keyframe folders
-    csv_files = glob.glob(f"{keyframes_csv_input_dir}/*/*.csv")
+    csv_files = glob.glob(f"{keyframes_csv_input_dir}/*.csv")
 
     return csv_files
 
@@ -94,7 +95,10 @@ def create_csv(
     # Loop over the list of CSV files
     for csv_file in csv_files:
         # Read each CSV file into a DataFrame and append it to the list
-        dfs.append(pd.read_csv(csv_file))
+        df = pd.read_csv(csv_file)
+        dfs.append(df)
+        # Delete the CSV file
+        os.remove(csv_file)
 
     # Concatenate all the dataframes in the list into a single dataframe
     combined_df = pd.concat(dfs, ignore_index=True)

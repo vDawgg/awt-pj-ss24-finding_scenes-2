@@ -16,7 +16,7 @@ class LLMModel(Model):
         run_inference: General purpose function, that tokenizes a given prompt and returns the generation of the model
     """
 
-    def run_inference(self, prompt: str, max_new_tokens: int = 300) -> str:
+    def run_inference(self, prompt: str, max_new_tokens: int = 200) -> str:
         """
         General purpose function, that tokenizes a given prompt and returns the generation of the model
 
@@ -25,9 +25,9 @@ class LLMModel(Model):
         quite restricted by default).
         :return: the models output.
         """
-        tokenized_prompt = self.tokenizer(prompt, return_tensors="pt")
+        tokenized_prompt = self.tokenizer(prompt, return_tensors="pt").to("cuda")
         return self.model.generate(**tokenized_prompt, max_new_tokens=max_new_tokens)
 
 
 if __name__ == '__main__':
-    model = Model("mistralai/Mistral-7B-v0.3", "")
+    model = Model("mistralai/Mistral-7B-Instruct-v0.3")

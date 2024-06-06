@@ -4,12 +4,16 @@ from utils.llm.model import LLMModel
 
 
 def align_caption(model: LLMModel, caption: str, context: str) -> str:
-    prompt = ("In the following you will be given a caption and preceding captions from an educational video. The current caption might not yet fit the preceding captions that well yet so your task is to make sure that the caption follows the red line from the preceding captions. If the caption already fits nicely in the context you do not have to make any adjustments. If the caption does not fit the context well yet, give me the adjusted caption. Do not write anything else."
-              "Caption:"
-              f"{caption}"
-              f"Context:"
-              f"{context}"
-              "Aligned Caption:\n")
+    prompt = [
+        {
+            "role": "system",
+            "content": "You are a bot whose job it is to make sure that imprecise captions for different parts of a video are well aligned with each other. To this end a user will supply you with a caption and the context for this caption, which are the preceding captions. You should then answer only with the caption, which is edited to properly fit the context. Remember that these captions should describe a video so remove any mentions of image descriptions, etc.",
+        },
+        {
+            "role": "user",
+            "content": f"Caption: '{caption}'; Context: {context}"
+        }
+    ]
     return model.run_inference(prompt)
 
 
@@ -22,7 +26,8 @@ def align_video_captions(model: LLMModel, csv_path: str) -> None:
             # This uses the last caption in the list for now, ideally this should
             # be set as an HP further down the line
             model.tokenizer.decode(
-                align_caption(model, caption, updated_caption_list[-1])[0]
-            ).split("Aligned Caption:")[1]
+                align_caption(model, caption, caption_list[:i])[0]
+            ).split("<|assistant|>")[1]
         )
     df["Caption"] = updated_caption_list[1:]
+    df.to_csv(csv_path)

@@ -17,17 +17,18 @@ def align_caption(model: LLMModel, caption: str, context: str) -> str:
     return model.run_inference(prompt)
 
 
-def align_video_captions(model: LLMModel, csv_path: str) -> None:
+def align_video_captions(model: LLMModel, csv_path: str, tasks) -> None:
     df = pd.read_csv(csv_path)
-    updated_caption_list = ['']
-    caption_list = df["Caption"]
-    for i, caption in enumerate(caption_list):
-        updated_caption_list.append(
-            # This uses the last caption in the list for now, ideally this should
-            # be set as an HP further down the line
-            model.tokenizer.decode(
-                align_caption(model, caption, caption_list[:i])[0]
-            ).split("<|assistant|>")[1]
-        )
-    df["Caption"] = updated_caption_list[1:]
+    for task, _ in tasks.items():
+        updated_caption_list = ['']
+        caption_list = df[task]
+        for i, caption in enumerate(caption_list):
+            updated_caption_list.append(
+                # This uses the last caption in the list for now, ideally this should
+                # be set as an HP further down the line
+                model.tokenizer.decode(
+                    align_caption(model, caption, caption_list[:i])[0]
+                ).split("<|assistant|>")[1]
+            )
+        df[task] = updated_caption_list[1:]
     df.to_csv(csv_path)

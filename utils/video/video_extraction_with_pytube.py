@@ -2,8 +2,7 @@ from typing import List, Tuple, Union
 from pytube import YouTube
 from constants import VIDEO_DIR
 import os
-from utils.objects.metadata_object import MetaDataObject
-import os
+
 
 
 class YouTubeVideo:
@@ -52,12 +51,9 @@ class YouTubeVideo:
 
 
 if __name__ == "__main__":
-    downloader = YouTubeVideo("https://www.youtube.com/watch?v=5C_HPTJg5ek")
-                
+    downloader = YouTubeVideo("https://www.youtube.com/watch?v=5C_HPTJg5ek")             
     path, subtitles = downloader.download_video_and_subtitles()
-    metaDataObject=MetaDataObject("https://www.youtube.com/watch?v=5C_HPTJg5ek", downloader.yt, [])
-    print(metaDataObject.to_json())
-    metaDataObject.youtube_video_id="Hallo"
-    print(metaDataObject.to_json())             
+
+                 
     
     

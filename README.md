@@ -38,3 +38,6 @@ cat /etc/ImageMagick-6/policy.xml | sed 's/none/read,write/g'> /etc/ImageMagick-
 ```
 =======
 
+## Running
+
+To run the current implementation of the pipeline open the colab_pipeline in colab or run it locally.

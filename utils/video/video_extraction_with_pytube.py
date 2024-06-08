@@ -1,9 +1,8 @@
 from typing import List, Tuple, Union
 from pytube import YouTube
-from constants import VIDEO_DIR
 import os
 from utils.objects.metadata_object import MetaDataObject
-import os
+from utils.constants import VIDEO_DIR
 
 
 class YouTubeVideo:

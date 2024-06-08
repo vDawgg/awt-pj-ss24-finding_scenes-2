@@ -1,8 +1,8 @@
-from scenedetect import (detect, ContentDetector, AdaptiveDetector, split_video_ffmpeg, open_video)
+from scenedetect import (AdaptiveDetector, split_video_ffmpeg, open_video)
 from scenedetect.scene_manager import SceneManager, write_scene_list
 import os
 from pathlib import Path
-from utils.video.constants import VIDEO_DIR
+from utils.constants import VIDEO_DIR
 import pandas as pd
 
 

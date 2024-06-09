@@ -12,7 +12,7 @@ from utils.metadata.metadata_function import get_metadata_from_scene_file, get_m
 import sys
 if __name__ == '__main__':
  
- input_string = input("Enter a string: ")
+ input_string = input("Enter url of youtube video  : ")
  print("You entered:", input_string)
  sys.stdout.flush()
 

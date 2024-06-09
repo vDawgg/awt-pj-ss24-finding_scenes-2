@@ -1,8 +1,7 @@
+from collections import namedtuple
 import csv
 from typing import List, Union
 from utils.objects.scene_object import SceneObject
-
-
 
 
 def get_metadata_from_scene_file(path_to_scene_csv: str) -> List[SceneObject]:
@@ -10,24 +9,22 @@ def get_metadata_from_scene_file(path_to_scene_csv: str) -> List[SceneObject]:
     with open(path_to_scene_csv, "r") as f:
         reader = csv.DictReader(f)
         for scene in reader:
-           scene_objects.append(SceneObject(
-            duration=scene['Length (seconds)'],
-            scene_start=scene['Start Time (seconds)'],
-            scene_end=scene['End Time (seconds)'],
-            title=scene['file_name'],
-        ))
+            scene_object=SceneObject()
+            scene_object.__setattr__("duration", scene['Length (seconds)'])
+            scene_object.__setattr__("scene_start", scene['Start Time (seconds)'])
+            scene_object.__setattr__("scene_end", scene['End Time (seconds)'])
+            scene_object.__setattr__("title", scene['file_name'])
+            scene_objects.append(scene_object)
+            
     return scene_objects
 
-def get_metadata_from_keyframe_file(path_to_keyframes_csv: str, scene_objects: List[SceneObject]) -> List[SceneObject]:
+def get_metadata_from_keyframe_file(path_to_keyframes_csv: str, scene_objects: List[SceneObject], tasks:dict) -> List[SceneObject]:
     with open(path_to_keyframes_csv, "r") as f:
         reader = csv.DictReader(f)
         for row in reader:
             for scene_object in scene_objects:
                 if row['Source Filename'] == scene_object.title:
-                    scene_object.language = row['LANGUAGE']
-                    scene_object.objects.append(row['INFORMATION'])
-                    scene_object.actions.append(row['VIDEO_TYPE'])
-                    scene_object.captions.append(row['CAPTION'])
-
+                    for task in tasks.keys():
+                        scene_object.__setattr__(task.lower().strip().replace(' ', '_').replace('(','').replace(')',''), row[task])
     return scene_objects
         

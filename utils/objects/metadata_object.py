@@ -22,4 +22,4 @@ class MetaDataObject:
         self.scene_objects: List[SceneObject] =SceneObjects
 
     def to_json(self):
-           return json.dumps(self.__dict__)
+        return json.dumps(self.__dict__, default=lambda o: o.__dict__)

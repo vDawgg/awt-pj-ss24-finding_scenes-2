@@ -50,9 +50,10 @@ def caption_images(model: CaptionModel, base_prompt: str, tasks, csv_file: str =
             enc_image = model.encode_image(image)
             if subtitle_list is not None:
                 subtitle = subtitle_list[i]
-                prompt = f"{base_prompt} \nSUBTITLES: {subtitle}\nTASK: {task}"
+                prompt = f" {description}"
+            
             else:
-                prompt = f"{base_prompt} \nTASK: {task}"
+                prompt = f"{description}"
             task_outputs.append(model.run_inference(enc_image, prompt))
         df[task] = task_outputs
 

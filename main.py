@@ -12,43 +12,39 @@ from utils.metadata.metadata_function import get_metadata_from_scene_file, get_m
 import sys
 if __name__ == '__main__':
  
- input_string = input("Enter url of youtube video  : ")
- print("You entered:", input_string)
- sys.stdout.flush()
-
+#  input_string = input("Enter  url of youtube video : ")
+#  print("You entered:", input_string)
+#  sys.stdout.flush()
+ input_string="https://www.youtube.com/watch?v=JvUvxN-A5O4"
  downloader = YouTubeVideo(input_string)
 
  path, subtitles = downloader.download_video_and_subtitles()
  print(path)
  scene_csv = get_scenes(path)
 
+
  process_all_videos_in_csv(scene_csv, "./videos/keyframes")
  create_keyframes_csv("./videos/keyframes", scene_csv) 
  save_subtitle_in_csv(subtitles, "videos/keyframes/extracted_keyframes.csv")
  model_id = "vikhyatk/moondream2"
  revision = "2024-05-20"
- model = CaptionModel(model_id, revision=revision)
+ model = CaptionModel(model_id)
  directory = "./videos/keyframes"
  tasks = {
     "CAPTION": "Caption the scene. Describe it with as much information as possible. ",
-    "INFORMATION": "Generate detailed information for this scene.",
-    "LANGUAGE": "What is the language used in the video this keyframe was captured from?",
-    "VIDEO_TYPE": "What kind of video is this, is it a tutorial, a lecture, etc?",
-    "OBJECTS": "What objects are present in the scene? List as many as possible as an array of objects. Name just the objects, not the actions. And spereate them with commas.",
+    "LANGUAGE": "What is the language used in the video this keyframe was captured from",
+    "VIDEO_TYPE": "What kind of video is this, is it a tutorial, a lecture, etc",
+    "BACKGROUND": "What is the background of the scene Describe it in detail.",
+    "OBJECTS": " Can you list all objects sperated by commas",
   }
 
  prompt = f"""
- Given keyframe extracted from a scene and the corresponding SUBTITLES - the subtitles transcribed for this scene.
- Generate detailed information for this scene for TASK - instructions on what exactly to capture.
- Use both the image and the subtitles to infer the information.
- If the TASK cannot be completed, then return "NONE".
  """.strip()
 
  caption_images(model=model, base_prompt=prompt, tasks=tasks, directory=directory)
- model_id = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
- model = LLMModel(model_id, load_in_4bit=True)
- align_video_captions(model, "./videos/keyframes/extracted_keyframes.csv",tasks)
-
+#  model_id = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+#  model = LLMModel(model_id, load_in_4bit=True)
+#  align_video_captions(model, "./videos/keyframes/extracted_keyframes.csv",tasks)
 
  scene_objects_with_extraction_data=get_metadata_from_scene_file(path_to_scene_csv=scene_csv)
 

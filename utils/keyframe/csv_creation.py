@@ -71,9 +71,9 @@ def milliseconds_to_time_string(milliseconds):
 
 
 def create_csv(
-    keyframes_csv_input_dir: str = "videos/keyframes",
-    scenes_csv_input_file: str = "videos/video_scenes/scene_list.csv",
-    output_csv_filepath: str = "videos/keyframes/extracted_keyframes.csv"
+    keyframes_csv_input_dir: str,
+    scenes_csv_input_file: str,
+    output_csv_filepath: str
 ):
     """
     Creates a CSV file containing keyframe data by combining multiple CSV files and merging them with scene information.
@@ -87,6 +87,7 @@ def create_csv(
         str: The file path of the output CSV file.
 
     """
+
     csv_files = generate_csv_file_paths(keyframes_csv_input_dir)
 
     # Initialize an empty list to hold dataframes
@@ -94,6 +95,7 @@ def create_csv(
 
     # Loop over the list of CSV files
     for csv_file in csv_files:
+        print(f"Reading {csv_file}")
         # Read each CSV file into a DataFrame and append it to the list
         df = pd.read_csv(csv_file)
         dfs.append(df)

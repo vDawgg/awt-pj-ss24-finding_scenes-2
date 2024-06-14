@@ -143,9 +143,6 @@ if __name__ == "__main__":
 
     start_time = time.time()
 
-
-
-
     keyframe_csv_path = generate_keyframes_from_scenes(
         scenes_csv_input_file="videos/video_scenes/scene_list.csv",
         no_of_frames_to_return=1

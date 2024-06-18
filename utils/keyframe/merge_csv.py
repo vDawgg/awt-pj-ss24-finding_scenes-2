@@ -2,7 +2,9 @@ import os
 import glob
 
 import pandas as pd
+from pathlib import Path
 
+from utils.constants import VIDEO_DIR
 
 def generate_csv_file_paths(
         keyframes_csv_input_dir: str = "videos/keyframes"
@@ -70,10 +72,8 @@ def milliseconds_to_time_string(milliseconds):
     return time_string
 
 
-def create_csv(
-    keyframes_csv_input_dir: str,
-    scenes_csv_input_file: str,
-    output_csv_filepath: str
+def merge_csv(
+        video_name: str,
 ):
     """
     Creates a CSV file containing keyframe data by combining multiple CSV files and merging them with scene information.
@@ -88,7 +88,12 @@ def create_csv(
 
     """
 
-    csv_files = generate_csv_file_paths(keyframes_csv_input_dir)
+    video_name = "Rust in 100 Seconds"
+    csv_file_paths = Path(VIDEO_DIR) / f"{video_name}_keyframes"
+    merged_csv_filepath = Path(VIDEO_DIR) / f"{video_name}_keyframes" / "extracted_keyframes.csv"
+    scenes_csv_input_file = Path(VIDEO_DIR) / f"{video_name}_scenes" / "scene_list.csv"
+
+    csv_files = generate_csv_file_paths(csv_file_paths)
 
     # Initialize an empty list to hold dataframes
     dfs = []
@@ -123,6 +128,6 @@ def create_csv(
 
     # Select only the desired columns from the merged DataFrame and save it to a new CSV file
     final_df = merged_df[['Filename', 'Source Filename','Timestamp Local (ms)', 'Timestamp Local (hh:mm:ss.SSS)','Timestamp Global (ms)', 'Timestamp Global (hh:mm:ss.SSS)']]
-    final_df.to_csv(output_csv_filepath, index=False, columns=['Filename', 'Source Filename', 'Timestamp Local (ms)', 'Timestamp Local (hh:mm:ss.SSS)','Timestamp Global (ms)', 'Timestamp Global (hh:mm:ss.SSS)'])
+    final_df.to_csv(merged_csv_filepath, index=False, columns=['Filename', 'Source Filename', 'Timestamp Local (ms)', 'Timestamp Local (hh:mm:ss.SSS)','Timestamp Global (ms)', 'Timestamp Global (hh:mm:ss.SSS)'])
 
-    return output_csv_filepath
+    return merged_csv_filepath

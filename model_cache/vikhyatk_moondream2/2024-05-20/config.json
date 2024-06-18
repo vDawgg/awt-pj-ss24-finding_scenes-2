@@ -1,0 +1,16 @@
+{
+  "_name_or_path": "vikhyatk/moondream2",
+  "architectures": [
+    "Moondream"
+  ],
+  "auto_map": {
+    "AutoConfig": "vikhyatk/moondream2--configuration_moondream.MoondreamConfig",
+    "AutoModelForCausalLM": "vikhyatk/moondream2--moondream.Moondream"
+  },
+  "model_type": "moondream1",
+  "text_config": {
+    "model_type": "phi"
+  },
+  "torch_dtype": "float32",
+  "transformers_version": "4.41.1"
+}

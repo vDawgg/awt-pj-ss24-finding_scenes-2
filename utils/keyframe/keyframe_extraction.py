@@ -75,6 +75,7 @@ def extract_keyframe(
 
 
 def process_all_videos(
+    video_name: str,
     video_files: list,
     output_dir: str,
     no_of_frames_to_return: int = 1
@@ -92,7 +93,8 @@ def process_all_videos(
 
     # Apply keyframe_extraction to each video file
     for video_file in video_files:
-        input_video_dir = os.path.join(VIDEO_DIR, "video_scenes")
+        input_video_dir = os.path.join(VIDEO_DIR, f"{video_name}_scenes")
+
         extract_keyframe(
             video_file_path=os.path.join(input_video_dir, video_file),
             output_dir=output_dir,
@@ -125,6 +127,7 @@ def generate_keyframes_from_scenes(
 
     # Extract keyframes from all videos in the scene list
     process_all_videos(
+        video_name=video_name,
         video_files=video_files,
         output_dir=keyframes_dir,
         no_of_frames_to_return=no_of_frames_to_return
@@ -220,8 +223,6 @@ if __name__ == "__main__":
     start_time = time.time()
 
     video_name = "Rust in 100 Seconds"
-
-    scenes_csv_input_file = Path(VIDEO_DIR) / f"{video_name}_scenes" / "scene_list.csv"
 
     keyframe_csv_path = generate_keyframes_from_scenes(
         video_name=video_name,

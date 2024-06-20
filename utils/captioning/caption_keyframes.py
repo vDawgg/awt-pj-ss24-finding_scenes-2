@@ -17,8 +17,11 @@ def get_column_values(csv_file: str, column_name: str) -> List[str]:
 def get_filepaths_from_csv(csv_file: str, filename_column: str, directory: str = "videos/keyframes") -> List[str]:
     csv_filepath = os.path.join(directory, csv_file)
     filenames = get_column_values(csv_filepath, filename_column)
+    
     full_filepaths = [f"{os.path.join(directory, ''.join(filename.split('_')[:-1]), filename)}" for filename in
                       filenames]
+    print("Full Filepaths: ", full_filepaths)
+
     return full_filepaths
 
 

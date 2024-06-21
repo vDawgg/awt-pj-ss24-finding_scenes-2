@@ -1,7 +1,8 @@
 import os
-from typing import List
+from typing import List, Any
 from PIL import Image
 import pandas as pd
+from transformers import PreTrainedTokenizerFast
 
 from utils.captioning.model import CaptionModel
 
@@ -55,6 +56,33 @@ def caption_images(model: CaptionModel, base_prompt: str, tasks, csv_file: str =
             else:
                 prompt = f"{description}"
             task_outputs.append(model.run_inference(enc_image, prompt))
+        df[task] = task_outputs
+
+    df.to_csv(csv_filepath, index=False)
+
+    return csv_filepath
+
+def caption_images_florence_2(model: Any, processor: PreTrainedTokenizerFast, tasks: dict, csv_file: str = "extracted_keyframes.csv",
+                              filename_column: str = 'Filename', directory: str = "videos/keyframes") -> str:
+    csv_filepath = os.path.join(directory, csv_file)
+    full_filepaths = get_filepaths_from_csv(csv_file, filename_column, directory)
+    subtitle_list = get_column_values(csv_filepath, 'Subtitle')
+    df = pd.read_csv(csv_filepath)
+
+    for task, description in tasks.items():
+        task_outputs = []
+        for i, filepath in enumerate(full_filepaths):
+            image = Image.open(filepath)
+
+            inputs = processor(text=description, images=image, return_tensors="pt")
+            output = model.generate(input_ids = inputs['input_ids'], pixel_values = inputs['pixel_values'], max_new_tokens=1024, do_sample=False, num_beams=3)
+            task_outputs.append(
+                processor.post_process_generation(
+                    processor.batch_decode(output, skip_special_tokens=False)[0],
+                    task=description,
+                    image_size=(image.width, image.height)
+                )
+            )
         df[task] = task_outputs
 
     df.to_csv(csv_filepath, index=False)

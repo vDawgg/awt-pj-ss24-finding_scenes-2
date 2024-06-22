@@ -1,7 +1,8 @@
 import os
-from typing import List
+from typing import List, Any
 from PIL import Image
 import pandas as pd
+from transformers import PreTrainedTokenizerFast
 
 from utils.captioning.model import CaptionModel
 
@@ -57,6 +58,89 @@ def caption_images(model: CaptionModel, base_prompt: str, tasks, csv_file: str =
             task_outputs.append(model.run_inference(enc_image, prompt))
         df[task] = task_outputs
 
+    df.to_csv(csv_filepath, index=False)
+
+    return csv_filepath
+
+
+def caption_images_idefics_2(model: Any, processor: PreTrainedTokenizerFast, tasks, csv_file: str = "extracted_keyframes.csv",
+                   filename_column: str = 'Filename', directory: str = "videos/keyframes") -> str:
+    """
+    Caption the images using the provided model and prompt.
+
+    Args:
+        model (object): The image captioning model.
+        prompt (str): The prompt to use for generating captions.
+        csv_file (str, optional): The name of the CSV file to store the captions. Defaults to "extracted_keyframes.csv".
+        filename_column (str, optional): The name of the column in the CSV file that contains the filenames. Defaults to 'Filename'.
+        directory (str, optional): The directory where the keyframe images are located. Defaults to "videos/keyframes".
+
+    Returns:
+        None
+    """
+
+    csv_filepath = os.path.join(directory, csv_file)
+    full_filepaths = get_filepaths_from_csv(csv_file, filename_column, directory)
+    subtitle_list = get_column_values(csv_filepath, 'Subtitle')
+    df = pd.read_csv(csv_filepath)
+
+    for task, description in tasks.items():
+        task_outputs = []
+        for i, filepath in enumerate(full_filepaths):
+            image = Image.open(filepath)
+            messages = [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "image"},
+                        {"type": "text", "text": f"{description}"},
+                    ]
+                },
+            ]
+            prompt = processor.apply_chat_template(messages, add_generation_prompt=True)
+            inputs = processor(text=prompt, images=[image], padding=True,
+                               return_tensors="pt")
+            inputs = {k: v.to("cuda:0") for k, v in inputs.items()}
+            task_outputs.append(
+                processor.batch_decode(
+                    model.generate(**inputs, max_new_tokens=600),
+                    skip_special_tokens=True
+                )[0].split("Assistant: ")[-1]
+            )
+            """else:
+                messages = [
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "image"},
+                            {"type": "text", "text": f"{description}"},
+                        ]
+                    },
+                    {
+                        "role": "assistant",
+                        "content": [
+                            {"type": "text",
+                             "text": f"{task_outputs[-1]}"},
+                        ]
+                    },
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "image"},
+                            {"type": "text", "text": f"Given the context of the preceding scene, please complete the following task: {description}"},
+                        ]
+                    },
+                ]
+                prompt = processor.apply_chat_template(messages, add_generation_prompt=True)
+                inputs = processor(text=prompt, images=[Image.open(full_filepaths[i-1]), image], padding=True, return_tensors="pt")
+                inputs = {k: v.to("cuda:0") for k, v in inputs.items()}
+                task_outputs.append(
+                    processor.batch_decode(
+                        model.generate(**inputs, max_new_tokens=600),
+                        skip_special_tokens=True
+                    )[0].split("Assistant: ")[-1]
+                )"""
+        df[task] = task_outputs
     df.to_csv(csv_filepath, index=False)
 
     return csv_filepath

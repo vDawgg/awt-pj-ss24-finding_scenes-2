@@ -92,6 +92,8 @@ def process_all_videos(
     for video_file in video_files:
         input_video_dir = os.path.join(VIDEO_DIR, f"{video_name}_scenes")
 
+        print(f"Processing video: {video_file}")
+
         extract_keyframe(
             video_file_path=os.path.join(input_video_dir, video_file),
             output_dir=output_dir,
@@ -120,6 +122,8 @@ def generate_keyframes_from_scenes(
     keyframes_dir = Path(VIDEO_DIR) / f"{video_name}_keyframes"
 
     os.makedirs(keyframes_dir, exist_ok=True)
+    print("Generating keyframes from scenes in the video:", video_name)
+    print("Keyframes will be saved at:", keyframes_dir)
 
     # Extract keyframes from all videos in the scene list
     process_all_videos(

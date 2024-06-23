@@ -173,9 +173,8 @@ def merge_csv(
 
     """
 
-    video_name = "Rust in 100 Seconds"
     csv_file_paths = Path(VIDEO_DIR) / f"{video_name}_keyframes"
-    merged_csv_filepath = Path(VIDEO_DIR) / f"{video_name}_keyframes" / "extracted_keyframes.csv"
+    merged_csv_filepath = Path(VIDEO_DIR) / f"{video_name}_keyframes" / "{video_name}_keyframes.csv"
     scenes_csv_input_file = Path(VIDEO_DIR) / f"{video_name}_scenes" / "scene_list.csv"
 
     csv_files = generate_csv_file_paths(csv_file_paths)

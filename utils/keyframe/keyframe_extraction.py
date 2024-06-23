@@ -12,7 +12,6 @@ from katna_custom.custom_writer import TimeStampDiskWriter
 from katna_custom.custom_video_extraction import CustomVideo
 from utils.keyframe.utils import time_string_to_milliseconds, milliseconds_to_time_string
 
-# from utils.video.constants import VIDEO_DIR
 from utils.constants import VIDEO_DIR
 
 
@@ -44,7 +43,6 @@ def extract_keyframe(
     video_file_path: str,
     output_dir: str,
     no_of_frames_to_return: int = 1,
-
 ) -> None:
     """
     Extracts keyframes from a video file and saves them to the specified output directory.
@@ -81,14 +79,13 @@ def process_all_videos(
     no_of_frames_to_return: int = 1
 ):
     """
-    Process all videos in a csv file and extract keyframes from each video.
+    Process all videos in the given list by extracting keyframes.
 
     Args:
-    csv_file_path (str): The path to the csv file containing the video files.
-    output_dir (str): The directory to save the keyframes.
-
-    Returns:
-    None
+        video_name (str): The name of the video.
+        video_files (list): A list of video files to process.
+        output_dir (str): The directory to save the extracted keyframes.
+        no_of_frames_to_return (int, optional): The number of keyframes to return for each video. Defaults to 1.
     """
 
     # Apply keyframe_extraction to each video file
@@ -105,14 +102,13 @@ def process_all_videos(
 def generate_keyframes_from_scenes(
     video_name: str,
     no_of_frames_to_return: int = 1
-):
+) -> str:
     """
-    Generate keyframes from scenes in a csv file.
+    Generate keyframes from scenes in a video.
 
     Args:
-        scenes_csv_input_file (str): The path to the csv file containing the scene information.
-        keyframes_dir (str, optional): The directory to save the keyframes. If not provided, a directory will be created based on the video name.
-        no_of_frames_to_return (int, optional): The number of keyframes to return for each scene. Defaults to 1.
+        video_name (str): The name of the video.
+        no_of_frames_to_return (int, optional): The number of keyframes to return per scene. Defaults to 1.
 
     Returns:
         str: The path to the generated keyframe CSV file.
@@ -140,7 +136,7 @@ def generate_keyframes_from_scenes(
 
 
 def generate_csv_file_paths(
-        keyframes_csv_input_dir: str = "videos/keyframes"
+        keyframes_csv_input_dir: str
 ) -> list:
     """
     Generate a list of all CSV files in the specific keyframe folders
@@ -159,7 +155,7 @@ def generate_csv_file_paths(
 
 def merge_csv(
         video_name: str,
-):
+) -> str:
     """
     Creates a CSV file containing keyframe data by combining multiple CSV files and merging them with scene information.
 
@@ -216,7 +212,7 @@ def merge_csv(
     final_df = merged_df[['Filename', 'Source Filename','Timestamp Local (ms)', 'Timestamp Local (hh:mm:ss.SSS)','Timestamp Global (ms)', 'Timestamp Global (hh:mm:ss.SSS)']]
     final_df.to_csv(merged_csv_filepath, index=False, columns=['Filename', 'Source Filename', 'Timestamp Local (ms)', 'Timestamp Local (hh:mm:ss.SSS)','Timestamp Global (ms)', 'Timestamp Global (hh:mm:ss.SSS)'])
 
-    print("Merged CSV file saved at:", f"{video_name}_keyframes.csv")
+    print("Merged CSV file saved at:", merged_csv_filepath)
 
     return merged_csv_filepath
 

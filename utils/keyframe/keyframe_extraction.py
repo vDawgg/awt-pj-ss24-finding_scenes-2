@@ -115,6 +115,9 @@ def generate_keyframes_from_scenes(
     Returns:
         str: The path to the generated keyframe CSV file.
     """
+    print("VIDEO_DIR:", VIDEO_DIR)
+    
+
 
     scenes_csv_input_file = Path(VIDEO_DIR) / f"{video_name}_scenes" / "scene_list.csv"
     video_files = get_column_values_from_csv(scenes_csv_input_file, "file_name")

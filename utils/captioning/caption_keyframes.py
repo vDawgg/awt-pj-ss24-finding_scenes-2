@@ -30,6 +30,9 @@ def caption_images(model: CaptionModel, base_prompt: str, tasks, csv_df: pd.Data
         str: The filepath of the CSV file with the generated captions.
     """
 
+    print("Captioning keyframe images...")
+
+
     def extend_to_full_path(filename):
         return Path(directory) / filename
     
@@ -38,9 +41,10 @@ def caption_images(model: CaptionModel, base_prompt: str, tasks, csv_df: pd.Data
     subtitle_list = get_column_values(csv_df, 'Subtitle')
 
     for task, description in tasks.items():
+        print(f"\nTask: {task}")
         task_outputs = []
         for i, filepath in enumerate(full_filepaths):
-            print("\nfilepath: ", filepath)
+            print("\nProcessing: ", filepath)
             image = Image.open(filepath)
             enc_image = model.encode_image(image)
             if subtitle_list is not None:
@@ -51,6 +55,8 @@ def caption_images(model: CaptionModel, base_prompt: str, tasks, csv_df: pd.Data
             task_outputs.append(model.run_inference(enc_image, prompt))
         csv_df[task] = task_outputs
 
+    print("Captioning complete!")
+
     return csv_df
 
 
@@ -60,7 +66,6 @@ if __name__ == "__main__":
     csv_filepath = f"{video_title}_keyframes.csv"
 
     filename_column = 'Filename'
-    directory = "/home/limin/Documents/programming/finding_scenes_in_learning_videos/awt-pj-ss24-finding_scenes-2/videos/Rust in 100 Seconds_keyframes"
     directory = Path("/content") / "awt-pj-ss24-finding_scenes-2" / "videos" / f"{video_title}_keyframes"
 
     csv_filepath = Path(directory) / csv_filepath

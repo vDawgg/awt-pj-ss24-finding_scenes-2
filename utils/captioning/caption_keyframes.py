@@ -2,70 +2,56 @@ import os
 from typing import List
 from PIL import Image
 import pandas as pd
+from pathlib import Path
 
 from utils.captioning.model import CaptionModel
 
 
-def get_column_values(csv_file: str, column_name: str) -> List[str]:
-    df = pd.read_csv(csv_file)
+def get_column_values(df: pd.DataFrame, column_name: str) -> List[str]:
     if column_name in df.columns:
         return df[column_name].values.tolist()
     else:
         return None
 
 
-def get_filepaths_from_csv(csv_file: str, filename_column: str, directory: str) -> List[str]:
-    csv_filepath = os.path.join(directory, csv_file)
-    filenames = get_column_values(csv_filepath, filename_column)
-    
-    # full_filepaths = [f"{os.path.join(directory, ''.join(filename.split('_')[:-1]), filename)}" for filename in
-    #                   filenames]
-    full_filepaths = [f"{os.path.join(directory, filename)}" for filename in
-                      filenames]
-    print("Full Filepaths: ", full_filepaths)
-
-
-    return full_filepaths
-
-
-def caption_images(model: CaptionModel, base_prompt: str, tasks, csv_file: str = "extracted_keyframes.csv",
-                   filename_column: str = 'Filename', directory: str = "videos/keyframes") -> str:
+def caption_images(model: CaptionModel, base_prompt: str, tasks, csv_df: pd.DataFrame, filename_column: str = 'Filename', directory: str = "videos/keyframes") -> str:
     """
-    Caption the images using the provided model and prompt.
+    Caption the images using the provided model and tasks.
 
     Args:
-        model (object): The image captioning model.
-        prompt (str): The prompt to use for generating captions.
-        csv_file (str, optional): The name of the CSV file to store the captions. Defaults to "extracted_keyframes.csv".
+        model (CaptionModel): The captioning model to use for generating captions.
+        base_prompt (str): The base prompt to use for generating captions.
+        tasks (dict): A dictionary mapping task names to task descriptions.
+        csv_file (str, optional): The name of the CSV file to read and write captions to. Defaults to "extracted_keyframes.csv".
         filename_column (str, optional): The name of the column in the CSV file that contains the filenames. Defaults to 'Filename'.
-        directory (str, optional): The directory where the keyframe images are located. Defaults to "videos/keyframes".
+        directory (str, optional): The directory where the images are located. Defaults to "videos/keyframes".
 
     Returns:
-        None
+        str: The filepath of the CSV file with the generated captions.
     """
 
-    csv_filepath = os.path.join(directory, csv_file)
-    full_filepaths = get_filepaths_from_csv(csv_file, filename_column, directory)
-    subtitle_list = get_column_values(csv_filepath, 'Subtitle')
-    df = pd.read_csv(csv_filepath)
+    extend_to_full_path = lambda filename: Path(directory) / filename
+    full_filepaths = csv_df[filename_column].apply(extend_to_full_path).tolist()
+
+    subtitle_list = get_column_values(csv_df, 'Subtitle')
 
     for task, description in tasks.items():
         task_outputs = []
         for i, filepath in enumerate(full_filepaths):
+            print("\nfilepath: ", filepath)
             image = Image.open(filepath)
             enc_image = model.encode_image(image)
             if subtitle_list is not None:
                 subtitle = subtitle_list[i]
                 prompt = f" {description}"
-            
             else:
                 prompt = f"{description}"
             task_outputs.append(model.run_inference(enc_image, prompt))
-        df[task] = task_outputs
+        csv_df[task] = task_outputs
 
-    df.to_csv(csv_filepath, index=False)
+    csv_df.to_csv(csv_filepath, index=False)
 
-    return csv_filepath
+    return csv_df
 
 
 if __name__ == "__main__":
@@ -74,6 +60,9 @@ if __name__ == "__main__":
 
     filename_column = 'Filename'
     directory = os.path.join("/content","keyframes")
+    directory = "/home/limin/Documents/programming/finding_scenes_in_learning_videos/awt-pj-ss24-finding_scenes-2/videos/Rust in 100 Seconds_keyframes"
+    csv_filepath = Path(directory) / csv_filepath
+    csv_df = pd.read_csv(csv_filepath)
 
     model_id = "vikhyatk/moondream2"
     revision = "2024-05-20"
@@ -94,10 +83,12 @@ if __name__ == "__main__":
     If the TASK cannot be completed, then return "NONE".
     """.strip()
 
-    csv_filepath = caption_images(
+    csv_df = caption_images(
         model=model,
         base_prompt=prompt,
         tasks=tasks,
         directory=directory,
-        csv_file=csv_filepath
+        csv_df=csv_df
     )
+
+    csv_df.to_csv(csv_filepath, index=False)

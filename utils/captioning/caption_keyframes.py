@@ -4,6 +4,7 @@ from PIL import Image
 import pandas as pd
 from pathlib import Path
 
+from utils.constants import VIDEO_DIR
 from utils.captioning.model import CaptionModel
 
 
@@ -14,24 +15,30 @@ def get_column_values(df: pd.DataFrame, column_name: str) -> List[str]:
         return None
 
 
-def caption_images(model: CaptionModel, base_prompt: str, tasks, csv_df: pd.DataFrame, filename_column: str = 'Filename', directory: str = "videos/keyframes") -> str:
+def caption_images(
+    model: CaptionModel, 
+    base_prompt: str, 
+    tasks, csv_df: pd.DataFrame,
+    filename_column: str, 
+    directory: str
+) -> str:
     """
-    Caption the images using the provided model and tasks.
+    Caption keyframe images using a given model and tasks.
 
     Args:
-        model (CaptionModel): The captioning model to use for generating captions.
-        base_prompt (str): The base prompt to use for generating captions.
-        tasks (dict): A dictionary mapping task names to task descriptions.
-        csv_file (str, optional): The name of the CSV file to read and write captions to. Defaults to "extracted_keyframes.csv".
-        filename_column (str, optional): The name of the column in the CSV file that contains the filenames. Defaults to 'Filename'.
-        directory (str, optional): The directory where the images are located. Defaults to "videos/keyframes".
+        model (CaptionModel): The captioning model to use for inference.
+        base_prompt (str): The base prompt to use for captioning.
+        tasks (dict): A dictionary of tasks to perform, where the keys are the task names and the values are descriptions.
+        csv_df (pd.DataFrame): The DataFrame containing the image filenames and subtitles.
+        filename_column (str): The name of the column in csv_df that contains the image filenames.
+        directory (str): The directory where the image files are located.
 
     Returns:
-        str: The filepath of the CSV file with the generated captions.
+        pd.DataFrame: The updated DataFrame with the captioning results.
+
     """
 
     print("Captioning keyframe images...")
-
 
     def extend_to_full_path(filename):
         return Path(directory) / filename
@@ -66,7 +73,7 @@ if __name__ == "__main__":
     csv_filepath = f"{video_title}_keyframes.csv"
 
     filename_column = 'Filename'
-    directory = Path("/content") / "awt-pj-ss24-finding_scenes-2" / "videos" / f"{video_title}_keyframes"
+    directory = Path(VIDEO_DIR) / f"{video_title}_keyframes"
 
     csv_filepath = Path(directory) / csv_filepath
     csv_df = pd.read_csv(csv_filepath)
@@ -95,6 +102,7 @@ if __name__ == "__main__":
         base_prompt=prompt,
         tasks=tasks,
         directory=directory,
+        filename_column=filename_column,
         csv_df=csv_df
     )
 

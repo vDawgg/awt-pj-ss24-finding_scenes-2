@@ -49,7 +49,7 @@ def caption_images(model: CaptionModel, base_prompt: str, tasks, csv_df: pd.Data
             task_outputs.append(model.run_inference(enc_image, prompt))
         csv_df[task] = task_outputs
 
-    csv_df.to_csv(csv_filepath, index=False)
+    # csv_df.to_csv(csv_filepath, index=False)
 
     return csv_df
 

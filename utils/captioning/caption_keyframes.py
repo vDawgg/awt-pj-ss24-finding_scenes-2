@@ -30,7 +30,9 @@ def caption_images(model: CaptionModel, base_prompt: str, tasks, csv_df: pd.Data
         str: The filepath of the CSV file with the generated captions.
     """
 
-    extend_to_full_path = lambda filename: Path(directory) / filename
+    def extend_to_full_path(filename):
+        return Path(directory) / filename
+    
     full_filepaths = csv_df[filename_column].apply(extend_to_full_path).tolist()
 
     subtitle_list = get_column_values(csv_df, 'Subtitle')
@@ -54,11 +56,13 @@ def caption_images(model: CaptionModel, base_prompt: str, tasks, csv_df: pd.Data
 
 if __name__ == "__main__":
 
-    csv_filepath = "extracted_keyframes.csv"
+    video_title = "Rust in 100 Seconds"
+    csv_filepath = f"{video_title}_keyframes.csv"
 
     filename_column = 'Filename'
-    directory = os.path.join("/content","keyframes")
     directory = "/home/limin/Documents/programming/finding_scenes_in_learning_videos/awt-pj-ss24-finding_scenes-2/videos/Rust in 100 Seconds_keyframes"
+    directory = Path("/content") / "awt-pj-ss24-finding_scenes-2" / "videos" / f"{video_title}_keyframes"
+
     csv_filepath = Path(directory) / csv_filepath
     csv_df = pd.read_csv(csv_filepath)
 

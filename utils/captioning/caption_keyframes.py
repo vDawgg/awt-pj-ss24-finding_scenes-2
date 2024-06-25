@@ -93,10 +93,14 @@ def caption_images_idefics_2(model: Any, processor: PreTrainedTokenizerFast, tas
                     "role": "user",
                     "content": [
                         {"type": "image"},
-                        {"type": "text", "text": f"{description}"},
+                        {"type": "text", "text": ""},
                     ]
                 },
             ]
+            if task == "CAPTION":
+                messages[0]["content"][1]["text"] = f"{description}. Use the following list of subtitles taken from the video the image is from as additional context: {subtitle_list}"
+            else:
+                messages[0]["content"][1]["text"] = f"{description}"
             prompt = processor.apply_chat_template(messages, add_generation_prompt=True)
             inputs = processor(text=prompt, images=[image], padding=True,
                                return_tensors="pt")
@@ -107,39 +111,6 @@ def caption_images_idefics_2(model: Any, processor: PreTrainedTokenizerFast, tas
                     skip_special_tokens=True
                 )[0].split("Assistant: ")[-1]
             )
-            """else:
-                messages = [
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "image"},
-                            {"type": "text", "text": f"{description}"},
-                        ]
-                    },
-                    {
-                        "role": "assistant",
-                        "content": [
-                            {"type": "text",
-                             "text": f"{task_outputs[-1]}"},
-                        ]
-                    },
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "image"},
-                            {"type": "text", "text": f"Given the context of the preceding scene, please complete the following task: {description}"},
-                        ]
-                    },
-                ]
-                prompt = processor.apply_chat_template(messages, add_generation_prompt=True)
-                inputs = processor(text=prompt, images=[Image.open(full_filepaths[i-1]), image], padding=True, return_tensors="pt")
-                inputs = {k: v.to("cuda:0") for k, v in inputs.items()}
-                task_outputs.append(
-                    processor.batch_decode(
-                        model.generate(**inputs, max_new_tokens=600),
-                        skip_special_tokens=True
-                    )[0].split("Assistant: ")[-1]
-                )"""
         df[task] = task_outputs
     df.to_csv(csv_filepath, index=False)
 

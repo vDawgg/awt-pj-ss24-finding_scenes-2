@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
     directory = "./videos/keyframes"
     tasks = {
-       "CAPTION": "Caption the scene. Describe the contents and possible topics with as much information as possible.",
+       "CAPTION": "Caption the scene. Describe the contents and likely topics with as much detail as possible.",
        "LANGUAGE": "What is the language used in the video this keyframe was captured from",
        "VIDEO_TYPE": "What kind of video is this, is it a tutorial, a lecture, etc",
        "BACKGROUND": "What is the background of the scene Describe it in detail.",
@@ -63,6 +63,6 @@ if __name__ == '__main__':
 
     metaDataObject=MetaDataObject(input_string, downloader.yt, scene_objects_with_llm_data)
 
-    with open('./metadata.json', 'w') as outfile:
+    with open('metadata_idefics.json', 'w') as outfile:
         outfile.write(metaDataObject.to_json())
         print(metaDataObject.to_json())

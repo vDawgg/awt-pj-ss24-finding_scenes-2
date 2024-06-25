@@ -37,12 +37,12 @@ class YouTubeVideo:
 
                 if not caption_key:
                     print("Video has no captions in English or German")
-                    return self.output_path + video.default_filename, None
+                    return yt.title, self.output_path + video.default_filename, None
 
                 subtitles = yt.captions[caption_key]
 
                 if subtitles:
-                    return os.path.join(self.output_path, video.default_filename), subtitles.generate_srt_captions()
+                    return yt.title, os.path.join(self.output_path, video.default_filename), subtitles.generate_srt_captions()
 
             else:
                 print("No video found with mp4 format.")

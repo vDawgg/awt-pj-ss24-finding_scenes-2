@@ -1,0 +1,1 @@
+export PYTHONPATH="/home/limin/Documents/programming/finding_scenes_in_learning_videos/awt-pj-ss24-finding_scenes-2:$PYTHONPATH"

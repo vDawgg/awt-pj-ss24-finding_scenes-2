@@ -1,4 +1,4 @@
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Any
 from pytube import YouTube
 import os
 from utils.objects.metadata_object import MetaDataObject
@@ -17,7 +17,7 @@ class YouTubeVideo:
                 return key  # Return the first key found
         return None  # Return None if no key is found
 
-    def download_video_and_subtitles(self) -> Union[Tuple[str, str], Tuple[str, None]]:
+    def download_video_and_subtitles(self) -> tuple[str, str | Any, None] | tuple[str, str, Any]:
         """Downloads a YouTube video and its subtitles if available.
 
         :rtype: Union[Tuple[str, str], Tuple[str, None]]

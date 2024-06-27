@@ -2,7 +2,7 @@ import os
 import csv
 import glob
 import time
-from typing import Optional
+from typing import Optional, Tuple
 from pathlib import Path
 import pandas as pd
 
@@ -104,7 +104,7 @@ def process_all_videos(
 def generate_keyframes_from_scenes(
     video_name: str,
     no_of_frames_to_return: int = 1
-) -> str:
+) -> tuple[str, str]:
     """
     Generate keyframes from scenes in a video.
 
@@ -132,14 +132,14 @@ def generate_keyframes_from_scenes(
     process_all_videos(
         video_name=video_name,
         video_files=video_files,
-        output_dir=keyframes_dir,
+        output_dir=str(keyframes_dir),
         no_of_frames_to_return=no_of_frames_to_return
     )
 
     # Merge scene csv files into one
     keyframe_csv_path = merge_csv(video_name=video_name)
 
-    return keyframe_csv_path
+    return str(keyframe_csv_path), str(keyframes_dir)
 
 
 def generate_csv_file_paths(
@@ -217,6 +217,7 @@ def merge_csv(
 
     # Select only the desired columns from the merged DataFrame and save it to a new CSV file
     final_df = merged_df[['Filename', 'Source Filename','Timestamp Local (ms)', 'Timestamp Local (hh:mm:ss.SSS)','Timestamp Global (ms)', 'Timestamp Global (hh:mm:ss.SSS)']]
+    final_df = final_df.drop_duplicates()
     final_df.to_csv(merged_csv_filepath, index=False, columns=['Filename', 'Source Filename', 'Timestamp Local (ms)', 'Timestamp Local (hh:mm:ss.SSS)','Timestamp Global (ms)', 'Timestamp Global (hh:mm:ss.SSS)'])
 
     print("Merged CSV file saved at:", merged_csv_filepath)

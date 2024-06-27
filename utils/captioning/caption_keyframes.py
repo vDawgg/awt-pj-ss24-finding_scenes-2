@@ -1,8 +1,11 @@
 import os
-from typing import List
+from typing import List, Any
 from PIL import Image
 import pandas as pd
 from pathlib import Path
+
+from pandas import DataFrame
+from transformers import AutoTokenizer
 
 from utils.constants import VIDEO_DIR
 from utils.captioning.model import CaptionModel
@@ -67,6 +70,49 @@ def caption_images(
     return csv_df
 
 
+def caption_images_llava(
+        model: Any,
+        processor: Any,
+        tasks,
+        csv: str,
+        filename_column: str,
+        directory: str
+) -> DataFrame:
+
+    print("Captioning keyframe images...")
+
+    csv_df = pd.read_csv(csv)
+
+    def extend_to_full_path(filename):
+        return Path(directory) / filename
+
+    full_filepaths = csv_df[filename_column].apply(extend_to_full_path).tolist()
+
+    subtitle_list = get_column_values(csv_df, 'Subtitle')
+
+    for task, description in tasks.items():
+        print(f"\nTask: {task}")
+        task_outputs = []
+        for i, filepath in enumerate(full_filepaths):
+            print("\nProcessing: ", filepath)
+
+            image = Image.open(filepath)
+            prompt = f"[INST] <image>\n{description}[/INST]"
+            inputs = processor(prompt, image, return_tensors="pt").to("cuda:0")
+
+            output = model.generate(**inputs, max_new_tokens=200)
+
+            task_outputs.append(
+                processor.decode(output[0], skip_special_tokens=True)
+            )
+
+        csv_df[task] = task_outputs
+
+    print("Captioning complete!")
+    csv_df.to_csv(csv, index=False)
+
+
+
 if __name__ == "__main__":
 
     video_title = "Rust in 100 Seconds"
@@ -107,3 +153,4 @@ if __name__ == "__main__":
     )
 
     csv_df.to_csv(csv_filepath, index=False)
+

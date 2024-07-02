@@ -1,12 +1,12 @@
 import torch
 
-from utils.llm.llm_helper import create_scene_caption_with_ministral_model
+from utils.llm.mistral_helper import create_scene_caption
 from utils.objects.metadata_object import MetaDataObject
 from utils.video.video_extraction_with_pytube import YouTubeVideo
 from utils.video.scenes import get_scenes
 from utils.video.keyframe_extraction import process_all_videos_in_csv, create_keyframes_csv
 from utils.video.subtitles import save_subtitle_in_csv
-from transformers import AutoProcessor, AutoModelForVision2Seq, BitsAndBytesConfig
+from transformers import AutoProcessor, AutoModelForVision2Seq, BitsAndBytesConfig, AutoModelForCausalLM, AutoTokenizer
 from utils.captioning.caption_keyframes import caption_images_idefics_2
 from utils.llm.model import LLMModel
 from utils.llm.align_captions import align_video_captions
@@ -59,11 +59,21 @@ if __name__ == '__main__':
     
     scene_objects_with_extraction_data=get_metadata_from_scene_file(path_to_scene_csv=scene_csv)
 
-  # enhances performance of LLM
+    gc.collect()
     model=None
+    torch.cuda.empty_cache()
+    
 
     model_id = "mistralai/Mistral-7B-Instruct-v0.3"
-    create_scene_caption_with_ministral_model(model_id, subtitles, "./videos/keyframes/extracted_keyframes.csv","./videos/keyframes/llm_captions.csv")
+    quantization_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype=torch.float16)
+
+    model = AutoModelForCausalLM.from_pretrained(model_id,quantization_config=quantization_config,attn_implementation="flash_attention_2", torch_dtype=torch.float16,)
+    tokenizer=AutoTokenizer.from_pretrained(model_id)
+
+    create_scene_caption(model,tokenizer,subtitles, "./videos/keyframes/extracted_keyframes.csv","./videos/keyframes/llm_captions.csv")
     scene_objects_with_llm_data=set_new_content_for_metadata_attribute_for_sceneobjects( path_to_keyframes_csv="./videos/keyframes/llm_captions.csv" ,scene_objects= scene_objects_with_extraction_data, attribute="Caption")
     
     metaDataObject=MetaDataObject(input_string, downloader.yt, scene_objects_with_llm_data)

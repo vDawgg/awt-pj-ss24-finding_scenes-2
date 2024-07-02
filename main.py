@@ -40,11 +40,14 @@ if __name__ == '__main__':
 
     directory = "./videos/keyframes"
     tasks = {
-       "CAPTION": "Caption the scene. Describe the contents and likely topics with as much detail as possible.",
-       "LANGUAGE": "What is the language used in the video this keyframe was captured from",
-       "VIDEO_TYPE": "What kind of video is this, is it a tutorial, a lecture, etc",
-       "BACKGROUND": "What is the background of the scene Describe it in detail.",
-       "OBJECTS": " Can you list all objects sperated by commas",
+        "CAPTION": "Caption the scene. Describe the contents and likely topics with as much detail as possible.",
+        "KEY-CONCEPTS": "What are the key-concepts outlined in this scene?",
+        "QUESTIONS": "Are there any questions or interactions addressed to the audience in this scene? If not simply answer 'NO'",
+        "TEXT": "Transcribe the text in this scene if there is any. Only answer with the text that is visible to you and nothing else. If there is no text do answer with '.'",
+        "RESOURCES": "Are there any additional resources mentioned in this scene? If not simply answer 'NO'",
+        "LANGUAGE": "What is the language used in the video this keyframe was captured from",
+        "VIDEO_TYPE": "What kind of video is this, is it a tutorial, a lecture, etc",
+        "OBJECTS": " Can you list all objects sperated by commas",
      }
 
     prompt = f"""

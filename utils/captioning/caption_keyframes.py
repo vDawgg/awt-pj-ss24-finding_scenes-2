@@ -97,7 +97,7 @@ def caption_images_idefics_2(model: Any, processor: PreTrainedTokenizerFast, tas
                     ]
                 },
             ]
-            if task == "CAPTION":
+            if task == "CAPTION" or task == "KEY-CONCEPTS" or task == "QUESTIONS" or task == "RESOURCES":
                 messages[0]["content"][1]["text"] = f"{description}. Use the following list of subtitles taken from the video the image is from as additional context: {subtitle_list}"
             else:
                 messages[0]["content"][1]["text"] = f"{description}"

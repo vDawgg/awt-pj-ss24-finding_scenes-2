@@ -40,11 +40,11 @@ if __name__ == '__main__':
     processor = LlavaNextProcessor.from_pretrained("llava-hf/llava-v1.6-mistral-7b-hf")
 
     tasks = {
-    "CAPTION": "Caption the scene. Describe it with as much information as possible. ",
-    "LANGUAGE": "What is the language used in the video this keyframe was captured from",
-    "VIDEO_TYPE": "What kind of video is this, is it a tutorial, a lecture, etc",
+    "CAPTION": "Caption the scene and put it into the context of the video through the provided subtitles if possible. Describe it with as much information as possible. ",
+    "LANGUAGE": "What is the language used in the video this keyframe was captured from? Only give the language as an answer.",
+    "VIDEO_TYPE": "What kind of video is this, is it a tutorial, a lecture, etc? Only answer with the type of the video.",
     "BACKGROUND": "What is the background of the scene Describe it in detail.",
-    "OBJECTS": " Can you list all objects sperated by commas",
+    "OBJECTS": " Can you list all objects sperated by commas? Only give the list of objects as an answer.",
     }
 
     caption_images_llava(model=model, processor=processor, tasks=tasks, directory=keyframe_dir, csv=keyframe_csv, filename_column="Filename")

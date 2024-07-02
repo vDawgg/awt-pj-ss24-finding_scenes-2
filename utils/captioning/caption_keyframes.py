@@ -97,13 +97,13 @@ def caption_images_llava(
             print("\nProcessing: ", filepath)
 
             image = Image.open(filepath)
-            prompt = f"[INST] <image>\n{description}[/INST]"
+            prompt = f"[INST] <image>\n{description}. The following list contains a list of subtitles from the video the given keyframe originates from. Use it as additional context {subtitle_list[i]}[/INST]"
             inputs = processor(prompt, image, return_tensors="pt").to("cuda:0")
 
             output = model.generate(**inputs, max_new_tokens=200)
 
             task_outputs.append(
-                processor.decode(output[0], skip_special_tokens=True)
+                processor.decode(output[0], skip_special_tokens=True).split("[/INST] ")[-1]
             )
 
         csv_df[task] = task_outputs

@@ -20,21 +20,21 @@ if __name__ == '__main__':
     print(path)
     scene_csv = get_scenes(path)
 
-    process_all_videos_in_csv(scene_csv, "./videos/keyframes")
+    process_all_videos_in_csv(scene_csv, "./videos/keyframes", no_of_frames_to_return=3)
     create_keyframes_csv("./videos/keyframes", scene_csv)
     save_subtitle_in_csv(subtitles, "videos/keyframes/extracted_keyframes.csv")
 
     quantization_config = BitsAndBytesConfig(
-     load_in_4bit=True,
-     bnb_4bit_quant_type="nf4",
-     bnb_4bit_use_double_quant=True,
-     bnb_4bit_compute_dtype=torch.float16
+        load_in_4bit=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_use_double_quant=True,
+        bnb_4bit_compute_dtype=torch.float16
     )
     model = AutoModelForVision2Seq.from_pretrained(
-     "HuggingFaceM4/idefics2-8b",
-     torch_dtype=torch.float16,
-     _attn_implementation="flash_attention_2",
-     quantization_config=quantization_config
+        "HuggingFaceM4/idefics2-8b",
+        torch_dtype=torch.float16,
+        _attn_implementation="flash_attention_2",
+        quantization_config=quantization_config
     )
     processor = AutoProcessor.from_pretrained("HuggingFaceM4/idefics2-8b")
 
@@ -42,18 +42,14 @@ if __name__ == '__main__':
     tasks = {
         "CAPTION": "Caption the scene. Describe the contents and likely topics with as much detail as possible.",
         "KEY-CONCEPTS": "What are the key-concepts outlined in this scene?",
-        "QUESTIONS": "Are there any questions or interactions addressed to the audience in this scene? If not simply answer 'NO'",
-        "TEXT": "Transcribe the text in this scene if there is any. Only answer with the text that is visible to you and nothing else. If there is no text do answer with '.'",
-        "RESOURCES": "Are there any additional resources mentioned in this scene? If not simply answer 'NO'",
+        "QUESTIONS": "Are there any questions or interactions addressed to the audience in this scene? If not simply answer 'NONE'",
+        "TEXT": "Transcribe the text in this scene if there is any. Only answer with the text that is visible to you and nothing else. If there is no text do answer with 'NONE'",
+        "RESOURCES": "Are there any additional resources mentioned in this scene? If not simply answer 'NONE'",
         "LANGUAGE": "What is the language used in the video this keyframe was captured from",
         "VIDEO_TYPE": "What kind of video is this, is it a tutorial, a lecture, etc",
-        "OBJECTS": " Can you list all objects sperated by commas",
      }
 
-    prompt = f"""
-    """.strip()
-
-    caption_images_idefics_2(model=model, processor=processor, tasks=tasks, directory=directory)
+    output_csv = caption_images_idefics_2(model=model, processor=processor, tasks=tasks, directory=directory)
     #  model_id = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
     #  model = LLMModel(model_id, load_in_4bit=True)
     #  align_video_captions(model, "./videos/keyframes/extracted_keyframes.csv",tasks)
@@ -62,7 +58,7 @@ if __name__ == '__main__':
 
     print(scene_objects_with_extraction_data)
 
-    scene_objects_with_llm_data=get_metadata_from_keyframe_file( path_to_keyframes_csv="./videos/keyframes/extracted_keyframes.csv" ,scene_objects= scene_objects_with_extraction_data,tasks=tasks)
+    scene_objects_with_llm_data=get_metadata_from_keyframe_file( path_to_keyframes_csv=output_csv ,scene_objects= scene_objects_with_extraction_data,tasks=tasks)
 
     metaDataObject=MetaDataObject(input_string, downloader.yt, scene_objects_with_llm_data)
 

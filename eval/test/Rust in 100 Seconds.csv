@@ -1,0 +1,7 @@
+Filename,Source Filename,Timestamp Local (ms),Timestamp Local (hh:mm:ss.SSS),Timestamp Global (ms),Timestamp Global (hh:mm:ss.SSS),CAPTION
+Rust in 100 Seconds-Scene-001_0.jpeg,Rust in 100 Seconds-Scene-001.mp4,7874,00:00:07.874,7874,00:00:07.873,Rust is a programming language that has high-level simplicity and low level performance
+Rust in 100 Seconds-Scene-002_0.jpeg,Rust in 100 Seconds-Scene-002.mp4,7273,00:00:07.273,17717,00:00:17.716,Rust is great for building systems and game engines. It was started in 2007 as a side project by Greydon Hoare
+Rust in 100 Seconds-Scene-003_0.jpeg,Rust in 100 Seconds-Scene-003.mp4,2235,00:00:02.235,21955,00:00:21.954,Rust has been the most popular programming language. Traditionally
+Rust in 100 Seconds-Scene-004_0.jpeg,Rust in 100 Seconds-Scene-004.mp4,8608,00:00:08.608,42675,00:00:42.674,Rust does not have a garbage collector
+Rust in 100 Seconds-Scene-005_0.jpeg,Rust in 100 Seconds-Scene-005.mp4,3336,00:00:03.336,93826,00:01:33.825,"Rust has a package manager called cargo which can initialize programs. Values in rust are immutable by default and the owner is the value name. Borrowing is achieved by the use of the symbol ""&""."
+Rust in 100 Seconds-Scene-006_0.jpeg,Rust in 100 Seconds-Scene-006.mp4,15315,00:00:15.315,137604,00:02:17.604,Rust has a standard library and can be compiled to an executable with the rustc compiler.

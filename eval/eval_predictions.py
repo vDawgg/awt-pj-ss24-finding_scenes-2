@@ -1,23 +1,32 @@
-from typing import List
+from typing import List, LiteralString
 
 import pandas as pd
 from transformers import AutoTokenizer
 
+from eval.cider.cider import Cider
 
-# TODO: The captions have to be tokenized already!
-def tokenize_sentences(sentences: [str]) -> List[str]:
+
+def tokenize_sentences(sentences: [str]) -> list[list[LiteralString | str]]:
     tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
-    return [tokenizer.tokenize(sentence) for sentence in sentences]
+    return [[" ".join(tokenizer.tokenize(sentence))] for sentence in sentences]
 
-def make_dict_from_csv(csv_file: str) -> dict:
-    reference_df = pd.read_csv(csv_file)
-    reference_captions = reference_df['CAPTION'].tolist()
-    reference_tokenized_captions = tokenize_sentences(reference_captions)
-    print(reference_tokenized_captions)
+def make_dict_from_csv(csv: str) -> dict:
+    df = pd.read_csv(csv)
+    captions = df['CAPTION'].tolist()
+    tokenized_captions = tokenize_sentences(captions)
+    print(tokenized_captions)
+    ids = df['Source Filename'].tolist()
+    return dict(zip(ids, tokenized_captions))
 
-def eval_predictions():
-    pass
+def eval_predictions(reference_dict: dict, candidate_dict: dict) -> float:
+    cider = Cider()
+    score, scores = cider.compute_score(reference_dict, candidate_dict)
+    return score
+
 
 if __name__ == '__main__':
-    make_dict_from_csv('./test/Rust in 100 Seconds.csv')
-    eval_predictions()
+    reference_dict = make_dict_from_csv('./test/Rust in 100 Seconds.csv')
+    print(reference_dict)
+    candidate_dict = make_dict_from_csv('./pred/Rust in 100 Seconds.csv')
+    score = eval_predictions(reference_dict, candidate_dict)
+    print(score)

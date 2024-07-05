@@ -9,7 +9,7 @@
 #
 # Authors: Ramakrishna Vedantam <vrama91@vt.edu> and Tsung-Yi Lin <tl483@cornell.edu>
 
-from cider_scorer import CiderScorer
+from eval.cider.cider_scorer import CiderScorer
 import pdb
 
 class Cider:
@@ -42,6 +42,7 @@ class Cider:
 
             # Sanity check.
             assert(type(hypo) is list)
+            print(len(hypo))
             assert(len(hypo) == 1)
             assert(type(ref) is list)
             assert(len(ref) > 0)

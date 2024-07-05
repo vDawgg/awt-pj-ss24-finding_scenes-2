@@ -43,12 +43,13 @@ class CustomVideo(Video):
             print("Large Video (duration = %s min), will split into smaller videos " % round(video_duration / 60))
             top_frames, top_timestamps = self.extract_video_keyframes_big_video(no_of_frames, file_path)
         else:
-            top_frames, top_timestamps = self._extract_keyframes_from_video(no_of_frames, file_path)
+            top_frames, top_timestamps =  self._extract_keyframes_from_video(no_of_frames, file_path)
 
         frame_writer.write(file_path, top_frames)
         timestamp_writer.write(file_path, top_timestamps)
 
         print("Completed processing for : ", file_path)
+
 
     def _extract_keyframes_from_video(self, no_of_frames, file_path):
             """Core method to extract keyframe for a video

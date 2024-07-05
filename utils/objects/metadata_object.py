@@ -19,6 +19,7 @@ class MetaDataObject:
         self.youtube_channel_id: str = youtube_object.channel_id if youtube_object else ""
         self.youtube_length: str = youtube_object.length if youtube_object else ""
         self.url: str = url
+        self.llm_description=""
         self.scene_objects: List[SceneObject] =SceneObjects
 
     def to_json(self):

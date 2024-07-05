@@ -69,6 +69,7 @@ def create_video_with_subtitles(subtitles_srt: str,path: str,fontsize:int=24, fo
     final_video.write_videofile(output_video_path)
 
     return output_video_path
+
 def search_subtitle(srt_string: str, timestamp_seconds: int)-> Union[str, None]:
     """Search for a subtitle by timestamp in seconds in a SRT string ."""
     subs= pysrt.from_string(srt_string)
@@ -83,6 +84,35 @@ def search_subtitle(srt_string: str, timestamp_seconds: int)-> Union[str, None]:
             return clean_text
 
     return None     
+
+def search_subtitle_for_scene(srt_string: str, csv_file: str) -> dict[str, str]:
+    """Extract subtitles for each scene based on timestamps."""
+    
+    # Read scenes from the CSV file
+    scenes_df = pd.read_csv(csv_file)
+    scenes = scenes_df.to_dict('records')
+    
+    # Parse the subtitles
+    subs = pysrt.from_string(srt_string)
+    subtitles_by_scene = {}
+    
+    for scene in scenes:
+        scene_start = scene['Start Time (seconds)'] * 1000
+        scene_end = scene['End Time (seconds)'] * 1000
+        scene_subtitles = []
+
+        for sub in subs:
+            start_time = time_to_milliseconds(sub.start)
+            end_time = time_to_milliseconds(sub.end)
+            
+            if scene_start <= start_time <= scene_end or scene_start <= end_time <= scene_end:
+                # Remove non-printable Unicode characters
+                clean_text = ''.join(c for c in sub.text if unicodedata.category(c)[0] != 'C')
+                scene_subtitles.append(clean_text)
+        
+        subtitles_by_scene[scene['file_name']] = '\n'.join(scene_subtitles)
+    
+    return subtitles_by_scene
 
 def save_subtitle_in_csv(srt_string:str,input_path_csv:str)-> str:
    """

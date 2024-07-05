@@ -17,7 +17,7 @@ def get_scenes(video_path: str) -> str:
     print("Starting scene extraction")
     video = open_video(video_path)
     scene_manager = SceneManager()
-    scene_manager.add_detector(AdaptiveDetector())
+    scene_manager.add_detector(AdaptiveDetector(min_scene_len=200, min_content_val=38))
     scene_manager.detect_scenes(video, show_progress=True)
     scene_list = scene_manager.get_scene_list()
 

@@ -17,20 +17,25 @@ def create_prompt_of_scene_for_caption_using_scene_subtitles(scene_object, scene
     
     # Gather keyframe descriptions with corresponding subtitles
     key_frame_descriptions = "\n".join(
-        [f" Keyframe Description : {description_caption}\nSubtitle: {description_subtitle}" for i, (description_caption, description_subtitle) in enumerate(zip(scene_object["CAPTION"], scene_object["Subtitle"]), start=1)]
+        [f" Keyframe Description : {description_caption}\nAudio transscript: {description_subtitle}" for i, (description_caption, description_subtitle) in enumerate(zip(scene_object["CAPTION"], scene_object["Subtitle"]), start=1)]
     )
     
     # Prepare the prompt in the specified format
     prompt = (
-    "You are a highly advanced AI whose task is to generate a detailed description of a scene based primarily on provided keyframe descriptions and their corresponding subtitles.\n\n"
-    "You will be given detailed descriptions of keyframes along with their corresponding audio transcript. Additionally, you will receive the audio transcript for the entire scene for contextual support. Your primary sources of information should be the keyframe descriptions and their subtitles, using the full scene transcript sparingly for additional context if needed.\n\n"
-    "Please generate a coherent and accurate description of the scene based on the keyframe descriptions and subtitles. Focus mainly on the keyframe information provided.\n\n"
-    "Just describe the scene; don't explain it in detail.\n\n"
-    "Keyframe Descriptions with Audio Transcript:\n"
-    f"{key_frame_descriptions}\"\n\n"
-    "Audio Transcript for the Whole Scene for Additional Context:\n"
-    f"{scene_subtitles}\"\n\n"
-    "Generate a detailed description of the scene:")
+    "You are a highly advanced AI tasked with generating a detailed description of a scene. You will be provided with keyframe descriptions and their corresponding subtitles, along with the full audio transcript of the scene for additional context.\n\n"
+    "Instructions:\n\n"
+    "1. **Primary Sources**: Use the keyframe descriptions and their corresponding audio transscript as your main sources of information.\n"
+    "2. **Secondary Source**: Utilize the full audio transcript of the scene only for additional context if necessary.\n"
+    "3. **Focus**: Concentrate on creating a coherent and accurate depiction of the scene based primarily on the keyframe information provided.\n\n"
+    "Scene Information:\n\n"
+    "Keyframe Descriptions with Corresponding Audio transscript:\n"
+    f"{key_frame_descriptions}\n\n"
+    "Full Scene Audio Transcript for Context:\n"
+    f"{scene_subtitles}\n\n"
+    "Task:\n"
+    "Generate a detailed and vivid description of the scene based on the provided keyframe descriptions and audio transscript. Do not explain the scene in detail; simply describe it.\n"
+    "Description of the Scene:"
+    )
     
     return prompt
 
@@ -39,19 +44,24 @@ def create_prompt_of_scene_for_key_concepts(scene_object, scene_subtitles: str) 
     
     # Gather keyframe concepts with corresponding subtitles
     key_frame_concepts = "\n".join(
-        [f"Keyframe Concept: {concept_caption}\nSubtitle: {concept_subtitle}" for i, (concept_caption, concept_subtitle) in enumerate(zip(scene_object["KEY-CONCEPTS"], scene_object["Subtitle"]), start=1)]
+        [f"Keyframe Concept: {concept_caption}\n Audio transscript: {concept_subtitle}" for i, (concept_caption, concept_subtitle) in enumerate(zip(scene_object["KEY-CONCEPTS"], scene_object["Subtitle"]), start=1)]
     )
     
     # Prepare the prompt in the specified format
     prompt = (
-        "You are a highly advanced AI whose task is to identify the key concepts outlined in a scene based primarily on provided keyframe concepts and their corresponding audio transscript.\n\n"
-        "You will be given detailed descriptions of keyframe concepts along with their corresponding subtitles. Additionally, you will receive the subtitles for the entire scene for contextual support, but your primary sources of information should be the keyframe concepts and their subtitles.\n\n"
-        "Please identify and list the key concepts outlined in the scene based on the keyframe concepts and subtitles. Use the scene subtitles sparingly for additional context if needed, but focus mainly on the keyframe information provided.\n\n"
-        "Keyframe Concepts with Subtitles:\n"
-        f"{key_frame_concepts}\n\n"
-        "Subtitles for the Whole Scene for Additional Context:\n"
-        f"{scene_subtitles}\n\n"
-        "What are the key concepts outlined in this scene?"
+    "You are a highly advanced AI tasked with identifying the key concepts outlined in a scene. You will be provided with keyframe concepts and their corresponding audio transscript, along with the full audio transscript of the scene for additional context.\n\n"
+    "Instructions:\n\n"
+    "1. **Primary Sources**: Use the keyframe concepts and their corresponding audio transscript as your main sources of information.\n"
+    "2. **Secondary Source**: Utilize the full scene audio transscript only for additional context if necessary.\n"
+    "3. **Focus**: Concentrate on identifying and listing the key concepts based primarily on the keyframe information provided.\n\n"
+    "Scene Information:\n\n"
+    "Keyframe Concepts with Corresponding audio transscript:\n"
+    f"{key_frame_concepts}\n\n"
+    "Full Scene audio transscript for Context:\n"
+    f"{scene_subtitles}\n\n"
+    "Task:\n"
+    "Identify and list the key concepts outlined in the scene based on the provided keyframe concepts and audio transscript.\n"
+    "Keyframe Concepts:"
     )
     
     return prompt
@@ -164,7 +174,7 @@ def create_prompt_for_video_description(scenes_captions: List[str], srt_context:
         f"{subtitle_context}"
         "\nOutput the description in a clear and engaging manner, focusing on the key elements and themes of the video."
         "Just describe the video; don't explain it in detail.\n\n"
-        "Video Description:"
+        "Give me the description of the video:"
     )
     
     return prompt
@@ -327,16 +337,17 @@ def create_lom_prompts_for_video_with_scenes_iterate(scenes_captions: List[str])
     # Iterate over each attribute and generate the prompt
     for attribute, description in lom_attributes.items():
         prompt = (
-            base_prompt +
+           # base_prompt +
             f"{description}\n\n"
             "Focus on providing the content only, WITHOUT explanations or additional details.\n\n"
             "Use Following Captions of Scenes of the video for context:\n\n"    
         )
         for scene_number, scene_caption in enumerate(scenes_captions, start=1):
             prompt += f"\nScene:{scene_number} Caption: {scene_caption}:\n"
-        prompt += f"{attribute}:"    
-
-        prompts[attribute] = prompt   
+        prompt+= "Use maximum 5 words in your output\n\n"
+        prompt += f"{attribute}:"   
+        prompts[attribute] = prompt 
+      
         
     return prompts
 

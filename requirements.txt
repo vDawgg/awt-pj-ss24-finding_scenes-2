@@ -53,3 +53,4 @@ urllib3==2.2.1
 pysrt==1.1.2
 accelerate
 bitsandbytes
+nltk

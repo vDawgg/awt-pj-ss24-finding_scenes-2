@@ -12,7 +12,7 @@ import json
 from utils.video.video_extraction_with_pytube import YouTubeVideo  # Ensure you have this custom module
 
 
-def create_prompt_of_scene_using_scene_subtitles(scene_object, scene_subtitles: str) -> str:
+def create_prompt_of_scene_for_caption_using_scene_subtitles(scene_object, scene_subtitles: str) -> str:
     """Creates a detailed description prompt for a scene using keyframe descriptions and corresponding subtitles of the scene."""
     
     # Gather keyframe descriptions with corresponding subtitles
@@ -31,6 +31,28 @@ def create_prompt_of_scene_using_scene_subtitles(scene_object, scene_subtitles: 
     "Subtitles for the Whole Scene for Additional Context:\n"
     f"{scene_subtitles}\n\n"
     "Generate a detailed description of the scene:"
+    )
+    
+    return prompt
+
+def create_prompt_of_scene_for_key_concepts(scene_object, scene_subtitles: str) -> str:
+    """Creates a detailed description prompt for identifying key concepts in a scene using keyframe descriptions and corresponding subtitles of the scene."""
+    
+    # Gather keyframe concepts with corresponding subtitles
+    key_frame_concepts = "\n".join(
+        [f"Keyframe Concept: {concept_caption}\nSubtitle: {concept_subtitle}" for i, (concept_caption, concept_subtitle) in enumerate(zip(scene_object["KEY-CONCEPTS"], scene_object["Subtitle"]), start=1)]
+    )
+    
+    # Prepare the prompt in the specified format
+    prompt = (
+        "You are a highly advanced AI whose task is to identify the key concepts outlined in a scene based primarily on provided keyframe concepts and their corresponding subtitles.\n\n"
+        "You will be given detailed descriptions of keyframe concepts along with their corresponding subtitles. Additionally, you will receive the subtitles for the entire scene for contextual support, but your primary sources of information should be the keyframe concepts and their subtitles.\n\n"
+        "Please identify and list the key concepts outlined in the scene based on the keyframe concepts and subtitles. Use the scene subtitles sparingly for additional context if needed, but focus mainly on the keyframe information provided.\n\n"
+        "Keyframe Concepts with Subtitles:\n"
+        f"{key_frame_concepts}\n\n"
+        "Subtitles for the Whole Scene for Additional Context:\n"
+        f"{scene_subtitles}\n\n"
+        "What are the key concepts outlined in this scene?"
     )
     
     return prompt
@@ -92,9 +114,6 @@ def create_prompt_for_scene_with_context_of_different_scene(scene_object, audio_
 
     
     return prompt
-
-
-
 
 
 
@@ -312,7 +331,6 @@ def create_lom_prompts_for_video_with_scenes_iterate(scenes_captions: List[str])
     )
     
     
-    
     # LOM attributes with their descriptions
     
     lom_attributes = {
@@ -405,14 +423,13 @@ def create_scene_caption_with_audio_of_scene(model,tokenizer, subtitles,keyframe
     if os.path.exists(output_path):
         # Delete the existing CSV file
         os.remove(output_path)
-
-     
+   
     dict_list = get_content_of_column_by_source_and_column_names(keyframes_path, ["CAPTION","Subtitle"])
     subtiles_dict = search_subtitle_for_scene(subtitles,scene_path)
     for source_filename, column_data in dict_list.items():
         print(source_filename)
         subtitles_of_scene = subtiles_dict[source_filename]
-        llm_prompt_for_scene = create_prompt_of_scene_using_scene_subtitles(column_data, subtitles_of_scene)
+        llm_prompt_for_scene = create_prompt_of_scene_for_caption_using_scene_subtitles(column_data, subtitles_of_scene)
         print(llm_prompt_for_scene)
         encodeds =  tokenizer(llm_prompt_for_scene, return_tensors="pt").to("cuda")
         prompt_length = encodeds['input_ids'].shape[1]
@@ -421,6 +438,28 @@ def create_scene_caption_with_audio_of_scene(model,tokenizer, subtitles,keyframe
         caption = decoded.replace('\n', ' ').replace('\r', ' ')
         save_data_to_csv(output_path, [{"Source Filename": source_filename, "Caption": caption}])
     return  output_path  
+
+def create_key_concept_for_scene_with_audio_of_scene(model,tokenizer, subtitles,keyframes_path,output_path,scene_path=""):
+    if os.path.exists(output_path):
+        # Delete the existing CSV file
+        os.remove(output_path)
+
+    dict_list = get_content_of_column_by_source_and_column_names(keyframes_path, ["KEY-CONCEPTS","Subtitle"])
+    print(dict_list)
+    subtiles_dict = search_subtitle_for_scene(subtitles,scene_path)
+    for source_filename, column_data in dict_list.items():
+        print(source_filename)
+        subtitles_of_scene = subtiles_dict[source_filename]
+        llm_prompt_for_scene = create_prompt_of_scene_for_key_concepts(column_data, subtitles_of_scene)
+        print(llm_prompt_for_scene)
+        encodeds =  tokenizer(llm_prompt_for_scene, return_tensors="pt").to("cuda")
+        prompt_length = encodeds['input_ids'].shape[1]
+        generated_ids = model.generate(encodeds['input_ids'],max_new_tokens=100, do_sample=True)
+        decoded = tokenizer.decode(generated_ids[0][prompt_length:],skip_special_tokens=True)
+        caption = decoded.replace('\n', ' ').replace('\r', ' ')
+        save_data_to_csv(output_path, [{"Source Filename": source_filename, "KEY-CONCEPTS": caption}], ['Source Filename', 'KEY-CONCEPTS'])
+    return  output_path  
+
 
 def create_scene_caption_with_audio_of_whole_video(model,tokenizer, subtitles,keyframes_path,output_path,):
     # Check if the output path exists

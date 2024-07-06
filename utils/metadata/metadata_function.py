@@ -25,7 +25,19 @@ def get_metadata_from_keyframe_file(path_to_keyframes_csv: str, scene_objects: L
             for scene_object in scene_objects:
                 if row['Source Filename'] == scene_object.title:
                     for task in tasks.keys():
-                        scene_object.__setattr__(task.lower().strip().replace(' ', '_').replace('(','').replace(')',''), row[task])
+                        attr_name = task.lower().strip().replace(' ', '_').replace('(','').replace(')','')
+                        attr_value = row[task]
+                        if task in ["QUESTIONS", "TEXT"]:
+                        # Check if the attribute already exists
+                           if hasattr(scene_object, attr_name):
+                            # Get the existing attribute value (which should be a list) and append the new value
+                            existing_value = getattr(scene_object, attr_name)
+                            existing_value.append(attr_value)
+                           else:
+                            # Create a new attribute with the value as a list
+                            setattr(scene_object, attr_name, [attr_value])
+                        else:
+                           setattr(scene_object, attr_name, attr_value)
     return scene_objects
 
 def set_new_content_for_metadata_attribute_for_sceneobjects(path_to_keyframes_csv: str, scene_objects: List[SceneObject], attribute) -> List[SceneObject]:

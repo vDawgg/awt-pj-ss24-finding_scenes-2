@@ -1,6 +1,7 @@
+import json
 import torch
 
-from utils.llm.mistral_helper import create_lom_caption_with_just_scenes_List, create_scene_caption_with_audio_of_scene, create_scene_caption_with_audio_of_whole_video, create_video_caption
+from utils.llm.mistral_helper import create_key_concept_for_scene_with_audio_of_scene, create_lom_caption_with_just_scenes_List, create_scene_caption_with_audio_of_scene, create_scene_caption_with_audio_of_whole_video, create_video_caption
 from utils.objects.metadata_object import MetaDataObject
 from utils.video.video_extraction_with_pytube import YouTubeVideo
 from utils.video.scenes import get_scenes
@@ -15,7 +16,7 @@ import gc
 from utils.metadata.metadata_function import get_metadata_from_scene_file, get_metadata_from_keyframe_file, set_new_content_for_metadata_attribute_for_sceneobjects
 
 if __name__ == '__main__':
-    input_string="https://www.youtube.com/watch?v=SqcY0GlETPk"
+    input_string="https://www.youtube.com/watch?v=L0koqAJe4lc"
     downloader = YouTubeVideo(input_string)
 
     path, subtitles = downloader.download_video_and_subtitles()
@@ -50,6 +51,13 @@ if __name__ == '__main__':
         "LANGUAGE": "What is the language used in the video this keyframe was captured from",
         "VIDEO_TYPE": "What kind of video is this, is it a tutorial, a lecture, etc",
      }
+    # Caption LLM Context
+    # KeyConcepts LLM Context
+    # Questions Concat
+    # Text Concat
+    # Resources ?
+    # Language Häufigkeit
+    # Video Type Häufigkeit 
 
     output_csv = caption_images_idefics_2(model=model, processor=processor, tasks=tasks, directory=directory)
     #  model_id = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
@@ -62,7 +70,6 @@ if __name__ == '__main__':
     model=None
     torch.cuda.empty_cache()
     
-
     model_id = "mistralai/Mistral-7B-Instruct-v0.3"
     quantization_config = BitsAndBytesConfig(
         load_in_4bit=True,
@@ -75,7 +82,9 @@ if __name__ == '__main__':
 
     scene_objects_with_llm_data=get_metadata_from_keyframe_file( path_to_keyframes_csv=output_csv ,scene_objects= scene_objects_with_extraction_data,tasks=tasks)
     create_scene_caption_with_audio_of_scene(model,tokenizer,subtitles, "./videos/keyframes/extracted_keyframes.csv","./videos/keyframes/llm_captions.csv",scene_csv)
-    scene_objects_with_llm_data=set_new_content_for_metadata_attribute_for_sceneobjects( path_to_keyframes_csv="./videos/keyframes/llm_captions.csv" ,scene_objects= scene_objects_with_extraction_data, attribute="Caption")
+    scene_objects_with_llm_data=set_new_content_for_metadata_attribute_for_sceneobjects(path_to_keyframes_csv="./videos/keyframes/llm_captions.csv" ,scene_objects= scene_objects_with_extraction_data, attribute="Caption")
+    create_key_concept_for_scene_with_audio_of_scene(model,tokenizer,subtitles, "./videos/keyframes/extracted_keyframes.csv","./videos/keyframes/llm_key_concepts.csv",scene_csv)
+    scene_objects_with_llm_data=set_new_content_for_metadata_attribute_for_sceneobjects(path_to_keyframes_csv="./videos/keyframes/llm_key_concepts.csv" ,scene_objects= scene_objects_with_extraction_data, attribute="KEY-CONCEPTS")
     description=create_video_caption(model,tokenizer, subtitles,"./videos/keyframes/llm_captions.csv")
     video_json=create_lom_caption_with_just_scenes_List(model,tokenizer, subtitles,"./videos/keyframes/llm_captions.csv")
     metaDataObject=MetaDataObject(input_string, downloader.yt, scene_objects_with_llm_data)
@@ -85,6 +94,7 @@ if __name__ == '__main__':
         outfile.write(metaDataObject.to_json())
         print(metaDataObject.to_json())
 
-    with open('metadata_idefics.json', 'w') as outfile:
-        outfile.write(video_json)
+    with open('metadata.json', 'w') as outfile:
         print(video_json)
+        outfile.write(json.dumps(video_json))
+        

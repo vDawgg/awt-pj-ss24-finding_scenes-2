@@ -61,7 +61,8 @@ def create_prompt_of_scene_for_key_concepts(scene_object, scene_subtitles: str) 
     f"{scene_subtitles}\n\n"
     "Task:\n"
     "Identify and list the key concepts outlined in the scene based on the provided keyframe concepts and audio transscript.\n"
-    "Keyframe Concepts:"
+    "Be short and concise in your response.\n\n"
+    "Keyframe Concepts: "
     )
     
     return prompt

@@ -49,18 +49,18 @@ def create_prompt_of_scene_for_key_concepts(scene_object, scene_subtitles: str) 
     
     # Prepare the prompt in the specified format
     prompt = (
-    "You are a highly advanced AI tasked with identifying the key concepts outlined in a scene. You will be provided with keyframe concepts and their corresponding audio transscript, along with the full audio transscript of the scene for additional context.\n\n"
+    "You are a highly advanced AI tasked with identifying the key concepts outlined in a scene. You will be provided with key concepts and their corresponding audio transscript, along with the full audio transscript of the scene for additional context.\n\n"
     "Instructions:\n\n"
-    "1. **Primary Sources**: Use the keyframe concepts and their corresponding audio transscript as your main sources of information.\n"
+    "1. **Primary Sources**: Use the key concepts and their corresponding audio transscript as your main sources of information.\n"
     "2. **Secondary Source**: Utilize the full scene audio transscript only for additional context if necessary.\n"
     "3. **Focus**: Concentrate on identifying and listing the key concepts based primarily on the keyframe information provided.\n\n"
     "Scene Information:\n\n"
-    "Keyframe Concepts with Corresponding audio transscript:\n"
+    "Key Concepts with Corresponding audio transscript:\n"
     f"{key_frame_concepts}\n\n"
     "Full Scene audio transscript for Context:\n"
     f"{scene_subtitles}\n\n"
     "Task:\n"
-    "Identify and list the key concepts outlined in the scene based on the provided keyframe concepts and audio transscript.\n"
+    "Identify and list the key concepts outlined in the scene based on the provided key concepts and audio transscript.\n"
     "Be short and concise in your response.\n\n"
     "Keyframe Concepts: "
     )

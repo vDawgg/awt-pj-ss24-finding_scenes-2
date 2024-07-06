@@ -89,12 +89,17 @@ if __name__ == '__main__':
     video_json=create_lom_caption_with_just_scenes_List(model,tokenizer, subtitles,"./videos/keyframes/llm_captions.csv")
     metaDataObject=MetaDataObject(input_string, downloader.yt, scene_objects_with_llm_data)
     metaDataObject.llm_description=description
+    metaDataObject.learning_resource_type=video_json["Learning Resource Type"]
+    metaDataObject.intended_end_user_role=video_json["Intended End User Role"]
+    metaDataObject.context=video_json["Context"]
+    metaDataObject.dificulty_level=video_json["Difficulty Level"]
+    metaDataObject.discipline=video_json["Discipline"]
+    metaDataObject.target_audience_age=video_json["Target Audience Age"]
+    metaDataObject.typical_learning_time=video_json["Typical Learning Time"]
+    metaDataObject.educational_level=video_json["Educational Level"]
 
     with open('metadata_idefics.json', 'w') as outfile:
         outfile.write(metaDataObject.to_json())
         print(metaDataObject.to_json())
 
-    with open('metadata.json', 'w') as outfile:
-        print(video_json)
-        outfile.write(json.dumps(video_json))
         

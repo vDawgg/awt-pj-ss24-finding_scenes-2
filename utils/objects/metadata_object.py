@@ -20,6 +20,14 @@ class MetaDataObject:
         self.youtube_length: str = youtube_object.length if youtube_object else ""
         self.url: str = url
         self.llm_description=""
+        self.learning_resource_type=""
+        self.intended_end_user_role=""
+        self.context=""
+        self.dificulty_level=""
+        self.discipline=""
+        self.educational_level=""
+        self.target_audience_age=""
+        self.typical_learning_time=""       
         self.scene_objects: List[SceneObject] =SceneObjects
 
     def to_json(self):

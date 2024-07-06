@@ -23,15 +23,14 @@ def create_prompt_of_scene_for_caption_using_scene_subtitles(scene_object, scene
     # Prepare the prompt in the specified format
     prompt = (
     "You are a highly advanced AI whose task is to generate a detailed description of a scene based primarily on provided keyframe descriptions and their corresponding subtitles.\n\n"
-    "You will be given detailed descriptions of keyframes along with their corresponding subtitles. Additionally, you will receive the subtitles for the entire scene for contextual support, but your primary sources of information should be the keyframe descriptions and their subtitles.\n\n"
-    "Please generate a coherent and accurate description of the scene based on the keyframe descriptions and subtitles. Use the scene subtitles sparingly for additional context if needed, but focus mainly on the keyframe information provided.\n\n"
-    "Just describe the scene dont explain it in detail\n\n"
-    "Keyframe Descriptions with Subtitles:\n"
-    f"{key_frame_descriptions}\n\n"
-    "Subtitles for the Whole Scene for Additional Context:\n"
-    f"{scene_subtitles}\n\n"
-    "Generate a detailed description of the scene:"
-    )
+    "You will be given detailed descriptions of keyframes along with their corresponding audio transcript. Additionally, you will receive the audio transcript for the entire scene for contextual support. Your primary sources of information should be the keyframe descriptions and their subtitles, using the full scene transcript sparingly for additional context if needed.\n\n"
+    "Please generate a coherent and accurate description of the scene based on the keyframe descriptions and subtitles. Focus mainly on the keyframe information provided.\n\n"
+    "Just describe the scene; don't explain it in detail.\n\n"
+    "Keyframe Descriptions with Audio Transcript:\n"
+    f"{key_frame_descriptions}\"\n\n"
+    "Audio Transcript for the Whole Scene for Additional Context:\n"
+    f"{scene_subtitles}\"\n\n"
+    "Generate a detailed description of the scene:")
     
     return prompt
 
@@ -45,7 +44,7 @@ def create_prompt_of_scene_for_key_concepts(scene_object, scene_subtitles: str) 
     
     # Prepare the prompt in the specified format
     prompt = (
-        "You are a highly advanced AI whose task is to identify the key concepts outlined in a scene based primarily on provided keyframe concepts and their corresponding subtitles.\n\n"
+        "You are a highly advanced AI whose task is to identify the key concepts outlined in a scene based primarily on provided keyframe concepts and their corresponding audio transscript.\n\n"
         "You will be given detailed descriptions of keyframe concepts along with their corresponding subtitles. Additionally, you will receive the subtitles for the entire scene for contextual support, but your primary sources of information should be the keyframe concepts and their subtitles.\n\n"
         "Please identify and list the key concepts outlined in the scene based on the keyframe concepts and subtitles. Use the scene subtitles sparingly for additional context if needed, but focus mainly on the keyframe information provided.\n\n"
         "Keyframe Concepts with Subtitles:\n"
@@ -141,7 +140,9 @@ def get_scene_caption_from_csv(filepath, column_name):
     
     return descriptions
 
-def create_prompt_for_video(scenes_captions: List[str], srt_context: str) -> str:
+
+
+def create_prompt_for_video_description(scenes_captions: List[str], srt_context: str) -> str:
     prompt = (
         "You are a highly intelligent AI with the ability to generate rich and comprehensive descriptions of videos. "
         "Below are detailed captions of key frames from various scenes. Your task is to synthesize these into a cohesive and vivid description of the entire video:\n"
@@ -161,30 +162,9 @@ def create_prompt_for_video(scenes_captions: List[str], srt_context: str) -> str
         "\nUsing the above key frame descriptions, please generate a comprehensive and detailed narrative of the video.\n"
         "Additionally, consider the following Audio script context while crafting your description:\n"
         f"{subtitle_context}"
-    )
-    
-    return prompt
-
-def create_prompt_for_video(scenes_captions: List[str], srt_context: str) -> str:
-    prompt = (
-        "You are a highly intelligent AI with the ability to generate rich and comprehensive descriptions of videos. "
-        "Below are detailed captions of key frames from various scenes. Your task is to synthesize these into a cohesive and vivid description of the entire video:\n"
-    )
-
-    subtitles = parse_srt(srt_context)
-    if subtitles:
-        subtitle_context = "\n".join([f"{i}: {subtitle}" for i, subtitle in enumerate(subtitles, start=1)])
-    else:
-        subtitle_context = "No subtitles available"
-    
-    # Add captions of each scene to the prompt
-    for scene_number, scene_caption in enumerate(scenes_captions, start=1):
-        prompt += f"\nScene {scene_number} Caption {scene_caption}:\n"
-
-    prompt += (
-        "\nUsing the above key frame descriptions, please generate a comprehensive and detailed narrative of the video.\n"
-        "Additionally, consider the following Audio script context while crafting your description:\n"
-        f"{subtitle_context}"
+        "\nOutput the description in a clear and engaging manner, focusing on the key elements and themes of the video."
+        "Just describe the video; don't explain it in detail.\n\n"
+        "Video Description:"
     )
     
     return prompt
@@ -326,17 +306,13 @@ def create_lom_prompts_for_video_with_transcript_iterate(audio_transcript: List[
 def create_lom_prompts_for_video_with_scenes_iterate(scenes_captions: List[str]) -> List[str]:
 
     base_prompt = (
-       "Below is a detailed transcript from the audio of the video. Your task is to synthesize this into a short comprehensive Bullet Point \n\n"
-       "For following Task: "
+        "Below are captions from scenes of the video. Your task is to synthesize these into short comprehensive keywords.\n\n"
+        "Just give the words without any addiontal Context\n\n"
+        "For the following Task:\n"
     )
-    
-    
-    # LOM attributes with their descriptions
-    
+    # LOM attributes with their descriptions    
     lom_attributes = {
         "Learning Resource Type": "Provide the type of learning resource (e.g., lecture, tutorial, demonstration).",
-        "Interactivity Type": "Specify the interactivity type (e.g., passive, active, mixed).",
-        "Interactivity Level": "Specify the degree of interactivity (e.g., low, medium, high).",
         "Intended End User Role": "Describe the primary user role (e.g., student, teacher).",
         "Context": "Describe the educational context (e.g., higher education, vocational training).",
         "Difficulty Level": "Indicate the difficulty level of the content (e.g., beginner, intermediate, advanced).",
@@ -354,7 +330,7 @@ def create_lom_prompts_for_video_with_scenes_iterate(scenes_captions: List[str])
             base_prompt +
             f"{description}\n\n"
             "Focus on providing the content only, WITHOUT explanations or additional details.\n\n"
-            "Use Following Audio Transcript for context:\n\n"    
+            "Use Following Captions of Scenes of the video for context:\n\n"    
         )
         for scene_number, scene_caption in enumerate(scenes_captions, start=1):
             prompt += f"\nScene:{scene_number} Caption: {scene_caption}:\n"
@@ -433,7 +409,7 @@ def create_scene_caption_with_audio_of_scene(model,tokenizer, subtitles,keyframe
         print(llm_prompt_for_scene)
         encodeds =  tokenizer(llm_prompt_for_scene, return_tensors="pt").to("cuda")
         prompt_length = encodeds['input_ids'].shape[1]
-        generated_ids = model.generate(encodeds['input_ids'],max_new_tokens=100, do_sample=True)
+        generated_ids = model.generate(encodeds['input_ids'],max_new_tokens=600, do_sample=True)
         decoded = tokenizer.decode(generated_ids[0][prompt_length:],skip_special_tokens=True)
         caption = decoded.replace('\n', ' ').replace('\r', ' ')
         save_data_to_csv(output_path, [{"Source Filename": source_filename, "Caption": caption}])
@@ -482,11 +458,11 @@ def create_scene_caption_with_audio_of_whole_video(model,tokenizer, subtitles,ke
 
 def create_video_caption(model,tokenizer, subtitles,input_path):
     scene_dict=get_scene_caption_from_csv(input_path, "Caption")
-    prompt=create_prompt_for_video(scene_dict,subtitles)
+    prompt=create_prompt_for_video_description(scene_dict,subtitles)
     print(prompt)
     encodeds =  tokenizer(prompt, return_tensors="pt").to("cuda")
     prompt_length = encodeds['input_ids'].shape[1]
-    generated_ids = model.generate(encodeds['input_ids'],max_new_tokens=100, do_sample=True, )
+    generated_ids = model.generate(encodeds['input_ids'],max_new_tokens=200, do_sample=True, )
     decoded = tokenizer.decode(generated_ids[0][prompt_length:],skip_special_tokens=True)
     caption = decoded.replace('\n', ' ').replace('\r', ' ')
 

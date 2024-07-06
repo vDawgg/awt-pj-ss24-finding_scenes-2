@@ -1,32 +1,68 @@
-from typing import List, LiteralString
+import json
+import os
 
 import pandas as pd
-from transformers import AutoTokenizer
+from pycocotools.coco import COCO
+from eval_scripts.eval import COCOEvalCap
 
-from eval.cider.cider import Cider
+def make_json_from_csvs():
+    ds = {
+        "images": [],
+        "annotations": [],
+    }
+    for csv in os.listdir('./dataset/test'):
+        print(csv)
+        print("hallo: ", os.path.join('./dataset', 'test', csv))
+        df = pd.read_csv(os.path.join('./dataset', 'test', csv))
 
+        img_ids = df['Source Filename'].tolist()
+        for id in img_ids:
+            if {"id": id} not in ds["images"]:
+                ds['images'].append({
+                    "id": id,
+                })
 
-def tokenize_sentences(sentences: [str]) -> list[list[LiteralString | str]]:
-    tokenizer = AutoTokenizer.from_pretrained('bert-base-cased')
-    return [[" ".join(tokenizer.tokenize(sentence))] for sentence in sentences]
+        counter = 0
+        captions = df['CAPTION'].tolist()
+        for id, cap in zip(img_ids, captions):
+            ds['annotations'].append({
+                "image_id": id,
+                "id": counter,
+                "caption": cap,
+            })
+            counter += 1
 
-def make_dict_from_csv(csv: str) -> dict:
-    df = pd.read_csv(csv)
-    captions = df['CAPTION'].tolist()
-    tokenized_captions = tokenize_sentences(captions)
-    print(tokenized_captions)
-    ids = df['Source Filename'].tolist()
-    return dict(zip(ids, tokenized_captions))
+    json.dump(ds, open('./dataset/ds.json', 'w'))
 
-def eval_predictions(reference_dict: dict, candidate_dict: dict) -> float:
-    cider = Cider()
-    score, scores = cider.compute_score(reference_dict, candidate_dict)
-    return score
+    preds = []
+    for csv in os.listdir('./dataset/pred'):
+        df = pd.read_csv(os.path.join('./dataset', 'pred', csv))
 
+        img_ids = df['Source Filename'].tolist()
+        captions = df['CAPTION'].tolist()
+
+        for id, cap in zip(img_ids, captions):
+            preds.append({
+                "image_id": id,
+                "caption": cap,
+            })
+
+    json.dump(preds, open('./dataset/pred.json', 'w'))
+
+def eval_predictions():
+    annotations = './dataset/ds.json'
+    results = './dataset/pred.json'
+
+    coco = COCO(annotations)
+    coco_result = coco.loadRes(results)
+
+    coco_eval = COCOEvalCap(coco, coco_result)
+
+    coco_eval.evaluate()
+
+    for metric, score in coco_eval.eval.items():
+        print(metric, score)
 
 if __name__ == '__main__':
-    reference_dict = make_dict_from_csv('./test/Rust in 100 Seconds.csv')
-    print(reference_dict)
-    candidate_dict = make_dict_from_csv('./pred/Rust in 100 Seconds.csv')
-    score = eval_predictions(reference_dict, candidate_dict)
-    print(score)
+    make_json_from_csvs()
+    eval_predictions()

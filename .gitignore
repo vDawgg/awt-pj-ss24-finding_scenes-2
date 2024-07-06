@@ -13,3 +13,5 @@ video/__pycache__/
 
 # Ignore venv
 venv/
+/eval/eval_scripts/spice/cache/*
+/eval/eval_scripts/spice/lib/*

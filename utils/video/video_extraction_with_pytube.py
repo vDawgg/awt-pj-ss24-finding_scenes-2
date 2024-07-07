@@ -29,7 +29,7 @@ class YouTubeVideo:
             video = yt.streams.filter(progressive=True, file_extension='mp4').first()
             if video:
                 print(f"Downloading '{yt.title}'...")
-                video.download(self.output_path)
+                video.download(self.output_path, filename=yt.title.replace("’", " "))
                 print("Download completed!")
 
                 priority_languages = ['en', 'a.en', 'de', 'a.de']
@@ -37,12 +37,12 @@ class YouTubeVideo:
 
                 if not caption_key:
                     print("Video has no captions in English or German")
-                    return self.output_path + video.default_filename, None
+                    return self.output_path + yt.title.replace("’", " "), None
 
                 subtitles = yt.captions[caption_key]
 
                 if subtitles:
-                    return os.path.join(self.output_path, video.default_filename), subtitles.generate_srt_captions()
+                    return os.path.join(self.output_path, yt.title.replace("’", " ")), subtitles.generate_srt_captions()
 
             else:
                 print("No video found with mp4 format.")

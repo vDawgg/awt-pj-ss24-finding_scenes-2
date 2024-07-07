@@ -1,4 +1,4 @@
-from scenedetect import (AdaptiveDetector, split_video_ffmpeg, open_video)
+from scenedetect import (AdaptiveDetector, split_video_ffmpeg, open_video, detect)
 from scenedetect.scene_manager import SceneManager, write_scene_list
 import os
 from pathlib import Path
@@ -15,13 +15,13 @@ def get_scenes(video_path: str) -> str:
     :return: directory the scenes are written to
     """
     print("Starting scene extraction")
-    video = open_video(video_path)
-    scene_manager = SceneManager()
-    scene_manager.add_detector(AdaptiveDetector(min_scene_len=200, min_content_val=20))
-    scene_manager.detect_scenes(video, show_progress=True)
-    scene_list = scene_manager.get_scene_list()
+    scene_list = detect(video_path, AdaptiveDetector(min_scene_len=200, min_content_val=35))
+
+    if len(scene_list) < 4:
+        scene_list = detect(video_path, AdaptiveDetector())
 
     # Create scene dir
+    video = open_video(video_path)
     scene_dir = os.path.join(VIDEO_DIR, f'{video.name}_scenes')
     Path(scene_dir).mkdir(exist_ok=True)
 

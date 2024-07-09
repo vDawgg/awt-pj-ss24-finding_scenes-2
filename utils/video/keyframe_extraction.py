@@ -1,4 +1,5 @@
 import os
+import sys
 import csv
 import glob
 from typing import Optional
@@ -113,27 +114,13 @@ def process_all_videos_in_directory(
         )
 
 
+def main():
+    csv_file_path = sys.argv[1]
+    no_of_frames_to_return = int(sys.argv[2])
+
+    process_all_videos_in_csv(csv_file_path=csv_file_path, output_dir="./videos/keyframes", no_of_frames_to_return=no_of_frames_to_return)
+    create_keyframes_csv(scenes_csv_input_file=csv_file_path)
+
+
 if __name__ == "__main__":
-    process_all_videos_in_csv(
-        csv_file_path="videos/video_scenes/scene_list.csv",
-        output_dir="videos/keyframes",
-        no_of_frames_to_return=1
-    )
-
-    create_keyframes_csv(
-        keyframes_csv_input_dir="videos/keyframes",
-        scenes_csv_input_file="videos/video_scenes/scene_list.csv",
-        output_file="videos/keyframes/extracted_keyframes.csv"
-    )
-
-    # process_all_videos_in_directory(
-    #     directory="videos/video_scenes",
-    #     output_dir="videos/keyframes",
-    #     no_of_frames_to_return=3
-    # )
-
-    # keyframe_extraction(
-    #     video_file_path="/home/limin/Documents/programming/finding_scenes_in_learning_videos/awt-pj-ss24-finding_scenes-2/videos/video_scenes/Rust in 100 Seconds-Scene-001.mp4",
-    #     no_of_frames_to_return=12,
-    #     output_dir="videos/keyframes"
-    # )
+    main()

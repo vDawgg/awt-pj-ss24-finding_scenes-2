@@ -28,8 +28,9 @@ class YouTubeVideo:
             yt.bypass_age_gate()
             video = yt.streams.filter(progressive=True, file_extension='mp4').first()
             if video:
-                print(f"Downloading '{yt.title}'...")
-                video.download(self.output_path, filename=yt.title.replace("’", " ").replace(":", " ")+".mp4")
+                title = ''.join(c for c in yt.title if c.isalnum() or c.isspace())
+                print(f"Downloading '{title}'...")
+                video.download(self.output_path, filename=title +".mp4")
                 print("Download completed!")
 
                 priority_languages = ['en', 'a.en', 'de', 'a.de']
@@ -37,12 +38,12 @@ class YouTubeVideo:
 
                 if not caption_key:
                     print("Video has no captions in English or German")
-                    return self.output_path + yt.title.replace("’", " ")+".mp4", None
+                    return self.output_path + title + ".mp4", None
 
                 subtitles = yt.captions[caption_key]
 
                 if subtitles:
-                    return os.path.join(self.output_path, yt.title.replace("’", " ").replace(":", " ")+".mp4"), subtitles.generate_srt_captions()
+                    return os.path.join(self.output_path, title + ".mp4"), subtitles.generate_srt_captions()
 
             else:
                 print("No video found with mp4 format.")

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metadata Extraction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+            max-height: 400px; /* Maximum height for the result div */
+            overflow-y: auto;  /* Enable vertical scrolling */
+            text-align: left;  /* Align text to the left for better readability */
+            word-wrap: break-word; /* Ensure long words break to the next line */
+            white-space: pre-wrap; /* Preserve whitespace formatting */
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Metadata Extraction</h1>
+        <form id="urlForm">
+            <input type="text" id="urlInput" placeholder="Enter YouTube URL" required>
+            <button type="submit">Submit</button>
+        </form>
+        <div id="result"></div>
+    </div>
+    <script>
+        document.getElementById('urlForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const url = document.getElementById('urlInput').value;
+            fetchMetadata(url);
+        });
+
+        async function fetchMetadata(url) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = 'Processing...';
+
+            try {
+                const response = await fetch(`/pipeline?url=${encodeURIComponent(url)}`);
+                const data = await response.json();
+                resultDiv.textContent = JSON.stringify(data, null, 2); // Format JSON with indentation
+            } catch (error) {
+                resultDiv.textContent = 'An error occurred. Please try again.';
+            }
+        }
+    </script>
+</body>
+</html>

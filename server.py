@@ -238,7 +238,7 @@ def run_pipeline(url: str):
 
     if not file_exists(str('metadata_idefics.json')):
         get_frame_caption()
-        convert_metadata(url)
+        generate_metadata(url)
 
     with open('metadata_idefics.json', 'r') as file:
         metadata = json.load(file)

@@ -159,7 +159,7 @@ def generate_metadata(url: str):
 
     try:
         downloader = YouTubeVideo(url)
-        path, subtitles = downloader.download_video_and_subtitles()
+        subtitles = downloader.download_subtitles()
 
         tasks = {
             "CAPTION": "Caption the scene. Describe the contents and likely topics with as much detail as possible.",

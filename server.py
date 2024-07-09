@@ -99,7 +99,7 @@ def extract_keyframes(url: str):
 def get_caption(url: str):
     try:
         downloader = YouTubeVideo(url)
-        _, subtitles = downloader.download_video_and_subtitles()
+        subtitles = downloader.download_subtitles()
         csv_path = Path(VIDEO_DIR) / "keyframes" / 'extracted_keyframes.csv'
         save_subtitle_in_csv(subtitles, csv_path)
         keyframes_csv = Path(VIDEO_DIR) / "keyframes" / 'extracted_keyframes.csv'
@@ -233,9 +233,9 @@ def generate_metadata(url: str):
         keyframes_csv.unlink(missing_ok=True)
         metadata_json.unlink(missing_ok=True)
         scenes(url)
-    if not file_exists(str(Path(VIDEO_DIR) / "keyframes" / 'extracted_keyframes.csv')):
         extract_keyframes(url)
         get_caption(url)
+
     if not file_exists(str('metadata_idefics.json')):
         get_frame_caption()
         convert_metadata(url)

@@ -51,16 +51,17 @@ class YouTubeVideo:
             print(f"Error downloading video: {e}")
 
     def download_video(self) -> str:
-       
-       title = ''.join(c for c in self.yt.title if c.isalnum() or c.isspace()) 
-       path = os.path.join(self.output_path, title+'.mp4')
-       ydl_opts = {
-         "outtmpl": path,
-       }
-       with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-         ydl.download(self.url)
+        
+        title = ''.join(c for c in self.yt.title if c.isalnum() or c.isspace()) 
+        path = os.path.join(self.output_path, title+'.mp4')
+        ydl_opts = {
+            "format": "mp4",
+            "outtmpl": path,
+        }           
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download(self.url)
 
-       return path
+        return path
 
     def download_subtitles(self) -> Union[str, None]:
         """Fetches the subtitles of a YouTube video if available.

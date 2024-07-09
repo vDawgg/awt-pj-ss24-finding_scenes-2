@@ -152,8 +152,8 @@ def get_frame_caption():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/pipeline")
-def convert_metadata(url: str):
+@app.get("/metadata")
+def generate_metadata(url: str):
     gc.collect()
     torch.cuda.empty_cache()
 
@@ -214,8 +214,8 @@ def convert_metadata(url: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/metadata")
-def generate_metadata(url: str):
+@app.get("/pipeline")
+def run_pipeline(url: str):
     title = get_youtube_video_title(url)
 
     if not file_exists(str(Path(VIDEO_DIR) / f"{title}.mp4")):

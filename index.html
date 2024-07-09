@@ -96,7 +96,7 @@
             resultDiv.textContent = 'Processing...';
 
             try {
-                const response = await fetch(`/pipeline?url=${encodeURIComponent(url)}`);
+                const response = await fetch(`/metadata?url=${encodeURIComponent(url)}`);
                 const data = await response.json();
                 resultDiv.textContent = JSON.stringify(data, null, 2); // Format JSON with indentation
             } catch (error) {

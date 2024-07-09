@@ -9,7 +9,7 @@ from utils.llm.model import LLMModel  # Ensure you have this custom module
 from utils.model.model import Model  # Ensure you have this custom module
 from utils.video.subtitles import search_subtitle_for_scene
 import json
-from utils.video.video_extraction_with_pytube import YouTubeVideo  # Ensure you have this custom module
+from utils.video.youtube import YouTubeVideo  # Ensure you have this custom module
 
 
 def create_prompt_of_scene_for_caption_using_scene_subtitles(scene_object, scene_subtitles: str) -> str:

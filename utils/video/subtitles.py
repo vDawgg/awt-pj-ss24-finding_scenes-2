@@ -2,7 +2,7 @@ import pysrt
 from typing import Union
 import pandas as pd
 from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip
-from utils.video.video_extraction_with_pytube import YouTubeVideo
+from utils.video.youtube import YouTubeVideo
 import unicodedata
 
 

@@ -10,7 +10,7 @@ import torch
 from transformers import AutoProcessor, AutoModelForVision2Seq, BitsAndBytesConfig, AutoModelForCausalLM, AutoTokenizer
 
 from utils.objects.metadata_object import MetaDataObject
-from utils.video.video_extraction_with_pytube import YouTubeVideo
+from utils.video.youtube import YouTubeVideo
 from utils.video.scenes import get_scenes
 from utils.video.keyframe_extraction import process_all_videos_in_csv, create_keyframes_csv
 from utils.video.subtitles import save_subtitle_in_csv
@@ -52,10 +52,10 @@ async def root():
 @app.post("/video")
 def download_video(url: str):
     downloader = YouTubeVideo(url)
-    path, subtitles = downloader.download_video_and_subtitles()
+    path = downloader.download_video()
+    subtitles= downloader.download_subtitles()
     print(path)
     return {"path": path, "subtitles": subtitles}
-
 
 @app.get("/scenes")
 def scenes(url: str):
@@ -152,7 +152,7 @@ def get_frame_caption():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/pipeline")
+@app.get("/pipeline")
 def convert_metadata(url: str):
     gc.collect()
     torch.cuda.empty_cache()

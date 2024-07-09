@@ -3,7 +3,7 @@ from pytube import YouTube
 import os
 from utils.objects.metadata_object import MetaDataObject
 from utils.constants import VIDEO_DIR
-
+import yt_dlp
 
 class YouTubeVideo:
     def __init__(self, url: str, output_path: str = VIDEO_DIR):
@@ -30,7 +30,7 @@ class YouTubeVideo:
             if video:
                 title = ''.join(c for c in yt.title if c.isalnum() or c.isspace())
                 print(f"Downloading '{title}'...")
-                video.download(self.output_path, filename=title +".mp4")
+                #video.download(self.output_path, filename=title +".mp4")
                 print("Download completed!")
 
                 priority_languages = ['en', 'a.en', 'de', 'a.de']
@@ -43,20 +43,54 @@ class YouTubeVideo:
                 subtitles = yt.captions[caption_key]
 
                 if subtitles:
-                    return os.path.join(self.output_path, title + ".mp4"), subtitles.generate_srt_captions()
+                    return "", subtitles.generate_srt_captions()
 
             else:
                 print("No video found with mp4 format.")
         except Exception as e:
             print(f"Error downloading video: {e}")
 
+    def download_video(self) -> str:
+       
+       title = ''.join(c for c in self.yt.title if c.isalnum() or c.isspace()) 
+       path = os.path.join(self.output_path, title+'.mp4')
+       ydl_opts = {
+         "outtmpl": path,
+       }
+       with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+         ydl.download(self.url)
+
+       return path
+
+    def download_subtitles(self) -> Union[str, None]:
+        """Fetches the subtitles of a YouTube video if available.
+
+        :rtype: Union[str, None]
+        :returns: Subtitles in SRT format as a string. If no subtitles are found, returns None.
+        """
+        try:
+            yt = self.yt
+            yt.bypass_age_gate()
+            priority_languages = ['en', 'a.en', 'de', 'a.de']
+            caption_key = self.get_first_existing_key(priority_languages, yt.captions.keys())
+
+            if not caption_key:
+                print("Video has no captions in English or German")
+                return None
+
+            subtitles = yt.captions[caption_key]
+
+            if subtitles:
+                return subtitles.generate_srt_captions()
+
+        except Exception as e:
+            print(f"Error fetching subtitles: {e}")
+            return None
 
 if __name__ == "__main__":
-    downloader = YouTubeVideo("https://www.youtube.com/watch?v=5C_HPTJg5ek")
-                
-    path, subtitles = downloader.download_video_and_subtitles()
-    metaDataObject=MetaDataObject("https://www.youtube.com/watch?v=5C_HPTJg5ek", downloader.yt, [])
-    print(metaDataObject.to_json())
+    downloader = YouTubeVideo("https://www.youtube.com/watch?v=L0koqAJe4lc")            
+    subtitles = downloader.download_subtitles()
+    print(subtitles)
 
                  
     

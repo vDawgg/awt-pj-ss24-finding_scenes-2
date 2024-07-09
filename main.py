@@ -3,7 +3,7 @@ import torch
 
 from utils.llm.mistral_helper import create_key_concept_for_scene_with_audio_of_scene, create_lom_caption_with_just_scenes_List, create_scene_caption_with_audio_of_scene, create_scene_caption_with_audio_of_whole_video, create_video_caption
 from utils.objects.metadata_object import MetaDataObject
-from utils.video.video_extraction_with_pytube import YouTubeVideo
+from utils.video.youtube import YouTubeVideo
 from utils.video.scenes import get_scenes
 from utils.video.keyframe_extraction import process_all_videos_in_csv, create_keyframes_csv
 from utils.video.subtitles import save_subtitle_in_csv
@@ -16,10 +16,12 @@ import gc
 from utils.metadata.metadata_function import get_metadata_from_scene_file, get_metadata_from_keyframe_file, set_new_content_for_metadata_attribute_for_sceneobjects
 
 if __name__ == '__main__':
-    input_string="https://www.youtube.com/watch?v=L0koqAJe4lc"
+    input_string="https://www.youtube.com/watch?v=q0zmfNx7OM4"
     downloader = YouTubeVideo(input_string)
 
-    path, subtitles = downloader.download_video_and_subtitles()
+    subtitles = downloader.download_subtitles()
+    path =downloader.download_video()
+
     print(path)
     scene_csv = get_scenes(path)
 

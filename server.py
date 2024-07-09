@@ -233,12 +233,12 @@ def generate_metadata(url: str):
         keyframes_csv.unlink(missing_ok=True)
         metadata_json.unlink(missing_ok=True)
         scenes(url)
-    # if not file_exists(str(Path(VIDEO_DIR) / "keyframes" / 'extracted_keyframes.csv')):
-    #     extract_keyframes(url)
-    #     get_caption(url)
-    # if not file_exists(str('metadata_idefics.json')):
-    #     get_frame_caption()
-    #     convert_metadata(url)
+    if not file_exists(str(Path(VIDEO_DIR) / "keyframes" / 'extracted_keyframes.csv')):
+        extract_keyframes(url)
+        get_caption(url)
+    if not file_exists(str('metadata_idefics.json')):
+        get_frame_caption()
+        convert_metadata(url)
 
     with open('metadata_idefics.json', 'r') as file:
         metadata = json.load(file)

@@ -2,11 +2,7 @@ import pysrt
 import unicodedata
 import pandas as pd
 from typing import Union
-from utils.video.youtube import YouTubeVideo
 from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip
-
-
-
 
 def time_to_seconds(time_object: pysrt.SubRipItem)-> int:
     """ 
@@ -23,11 +19,11 @@ def time_to_milliseconds(time_object: pysrt.SubRipItem) -> int:
     Convert a pysrt.SubRipItem object to milliseconds.
 
     :param pysrt.SubRipItem: A pysrt.SubRipItem object representing a timestamp.
+
     :rtype: int
     :returns: The timestamp in milliseconds.
     """
     return (time_object.hours * 3600 * 1000 + time_object.minutes * 60 * 1000 + time_object.seconds * 1000 + time_object.milliseconds)
-
 
 def create_video_with_subtitles(subtitles_srt: str,path: str,fontsize:int=24, font: str='Arial', color: str='yellow', debug :bool = False, bg_color:str="black")-> str:
     """
@@ -42,6 +38,7 @@ def create_video_with_subtitles(subtitles_srt: str,path: str,fontsize:int=24, fo
     :param str font: (optional) The font family of the subtitles. Default is 'Arial'.
     :param str color: (optional) The color of the subtitles. Default is 'yellow'.
     :param bool debug: (optional) A flag indicating whether to enable debug mode. Default is False.
+
     :rtype: str
     :returns: The path of the output video file.
     """
@@ -161,7 +158,7 @@ def save_subtitle_in_csv(srt_string:str,input_path_csv:str)-> str:
    subtitles_list = []
 
    # Iterate through each row and find the corresponding subtitle
-   for index, row in df.iterrows():
+   for _, row in df.iterrows():
      global_timestamp_ms = row['Timestamp Global (ms)']
      subtitle = search_subtitle(srt_string, global_timestamp_ms)
      subtitles_list.append(subtitle)
@@ -177,23 +174,4 @@ def save_subtitle_in_csv(srt_string:str,input_path_csv:str)-> str:
    return input_path_csv
  
 
-    
-if __name__ == "__main__":
-   downloader = YouTubeVideo("https://www.youtube.com/watch?v=2s6mIboARCM")
-   path, subtitles = downloader.download_video_and_subtitles()
-   # Scene extraction
-   # Keyframe extraction
-   print(subtitles)
-   save_subtitle_in_csv(subtitles,"videos/keyframes/extracted_keyframes.csv")
-   df = pd.read_csv("videos/keyframes/extracted_keyframes.csv")
-   for index, row in df.iterrows():
-     global_timestamp_ms = row['Timestamp Global (ms)']
-     global_timestamp_hhmmss = row['Timestamp Global (hh:mm:ss.SSS)']
-     filename = row['Filename']
-     subtitle=search_subtitle(subtitles,global_timestamp_ms)
-     print(f"Row {index}:")
-     print(f"  Filename: {filename}")
-     print(f"  Global Timestamp (ms): {global_timestamp_ms}")
-     print(f"  Global Timestamp (hh:mm:ss.SSS): {global_timestamp_hhmmss}")
-     print(f"  Subtitle: {subtitle}\n")
        

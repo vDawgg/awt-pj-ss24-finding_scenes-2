@@ -7,8 +7,9 @@ from transformers import AutoProcessor, AutoModelForVision2Seq, BitsAndBytesConf
 
 from utils.video.scenes import get_scenes
 from utils.video.subtitles import save_subtitle_in_csv
+from utils.video.create_keyframes_csv import create_keyframes_csv
 from utils.captioning.caption_keyframes import caption_images_idefics_2
-from utils.video.keyframe_extraction import process_all_videos_in_csv, create_keyframes_csv
+from utils.video.keyframe_extraction import process_all_videos_in_csv
 from utils.metadata.metadata_function import get_metadata_from_scene_file, get_metadata_from_keyframe_file, set_new_content_for_metadata_attribute_for_scene_objects
 from utils.llm.mistral_helper import create_key_concept_for_scene_with_audio_of_scene, create_lom_caption_with_just_scenes_List, create_scene_caption_with_audio_of_scene, create_video_caption
 

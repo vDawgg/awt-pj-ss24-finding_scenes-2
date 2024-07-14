@@ -1,16 +1,12 @@
 import os
 import csv
-import torch
 from typing import List
-from utils.video.youtube import YouTubeVideo
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
 from utils.video.subtitles import search_subtitle_for_scene
 
 def create_prompt_of_scene_for_caption_using_scene_subtitles(scene_object:any, scene_subtitles: str) -> str:
     """Creates a detailed description prompt for a scene using keyframe descriptions and corresponding subtitles of the scene.
 
-    
     :param str scene_object: The scene object containing keyframe descriptions and subtitles.
     :param str scene_subtitles: The full audio transcript of the scene.
 
@@ -41,7 +37,7 @@ def create_prompt_of_scene_for_caption_using_scene_subtitles(scene_object:any, s
     
     return prompt
 
-def create_prompt_of_scene_for_key_concepts(scene_object, scene_subtitles: str) -> str:
+def create_prompt_of_scene_for_key_concepts(scene_object:any, scene_subtitles: str) -> str:
     """Creates a detailed description prompt for identifying key concepts in a scene using keyframe descriptions and corresponding subtitles of the scene.
 
     :param str scene_object: The scene object containing keyframe descriptions and subtitles.
@@ -76,73 +72,6 @@ def create_prompt_of_scene_for_key_concepts(scene_object, scene_subtitles: str) 
     return prompt
 
 
-def create_prompt_for_scene_with_Audio_of_whole_video(scene_object: any, audio_script:str, caption: str, subtitle: str) -> str:
-    """Creates a detailed description prompt for a scene using keyframe descriptions and corresponding transcripts.
-
-    :param any scene_object: The scene object containing keyframe descriptions and subtitles.
-    :param str audio_script: The full audio transcript of the video.
-    :param str caption: The keyframe description column name.
-    :param str subtitle: The keyframe subtitle column name.
-
-    :rtype: str
-    :returns: The prompt for generating a detailed description of the scene.
-
-
-    """
-    
-    # Gather keyframe descriptions with corresponding audio transcripts
-    key_frame_descriptions = "\n".join(
-        [f" Keyframe Description : {description_caption}\nAudio Transcript: {description_subtitle}" for i, (description_caption, description_subtitle) in enumerate(zip(scene_object[caption], scene_object[subtitle]), start=1)]
-    )
-    
-    # Use the provided audio script for additional context
-    subtitles = parse_srt(audio_script)
-    if subtitles:
-        subtitle_context = "\n".join([f"{i}: {subtitle}" for i, subtitle in enumerate(subtitles, start=1)])
-    else:
-        subtitle_context = "No subtitles available"
-    
-    # Prepare the prompt in the specified format
-    prompt = (
-    "You are a highly advanced AI whose task is to generate a detailed description of a scene based primarily on provided keyframe descriptions and their corresponding audio transcripts.\n\n"
-    "You will be given detailed descriptions of keyframes along with their corresponding audio transcripts. Additionally, you will receive an audio script for the entire video for contextual support, but your primary sources of information should be the keyframe descriptions and their audio transcripts.\n\n"
-    "Please generate a coherent and accurate description of the scene based on the keyframe descriptions and audio transcripts. Use the audio script from the whole video sparingly for additional context if needed, but focus mainly on the keyframe information provided.\n\n"
-    "Keyframe Descriptions with Audio Transcripts:\n"
-    f"{key_frame_descriptions}\n\n"
-    "Audio Script from the Whole Video for Additional Context:\n"
-    f"{subtitle_context}\n\n"
-    "Generate a detailed description of the scene:")  
-    return prompt
-
-def create_prompt_for_scene_with_context_of_different_scene(scene_object, audio_script, caption: str, subtitle: str) -> str:
-    """Creates a detailed description prompt for a scene using keyframe descriptions and corresponding transcripts."""
-    
-    # Gather keyframe descriptions with corresponding audio transcripts
-    key_frame_descriptions = "\n".join(
-        [f" Keyframe Description : {description_caption}\nAudio Transcript: {description_subtitle}" for i, (description_caption, description_subtitle) in enumerate(zip(scene_object[caption], scene_object[subtitle]), start=1)]
-    )
-    
-    # Use the provided audio script for additional context
-    subtitles = parse_srt(audio_script)
-    if subtitles:
-        subtitle_context = "\n".join([f"{i}: {subtitle}" for i, subtitle in enumerate(subtitles, start=1)])
-    else:
-        subtitle_context = "No subtitles available"
-    
-    # Prepare the prompt in the specified format
-    prompt = (
-    "You are a highly advanced AI whose task is to generate a detailed description of a scene based primarily on provided keyframe descriptions and their corresponding audio transcripts.\n\n"
-    "You will be given detailed descriptions of keyframes along with their corresponding audio transcripts. Additionally, you will receive an audio script for the entire video for contextual support, but your primary sources of information should be the keyframe descriptions and their audio transcripts.\n\n"
-    "Please generate a coherent and accurate description of the scene based on the keyframe descriptions and audio transcripts. Use the audio script from the whole video sparingly for additional context if needed, but focus mainly on the keyframe information provided.\n\n"
-    "Keyframe Descriptions with Audio Transcripts:\n"
-    f"{key_frame_descriptions}\n\n"
-    "Audio Script from the Whole Video for Additional Context:\n"
-    f"{subtitle_context}\n\n"
-    "Generate a detailed description of the scene:")
-    return prompt
-
-
-
 def get_content_of_column_by_source_and_column_names(filepath, column_names: List[str]) -> dict:
     """
     Extracts the content of specified columns from a CSV file and organizes it by source filename.
@@ -154,7 +83,6 @@ def get_content_of_column_by_source_and_column_names(filepath, column_names: Lis
     :returns: A dictionary containing the content organized by source filename.
 
     """
-
     dict_list = {}
     with open(filepath, newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
@@ -190,8 +118,17 @@ def get_scene_caption_from_csv(filepath:str, column_name:str)-> List[str]:
     return descriptions
 
 
-
 def create_prompt_for_video_description(scenes_captions: List[str], srt_context: str) -> str:
+    """
+    Creates a prompt for generating a comprehensive description of a video based on key frame descriptions and subtitles.
+
+    :param List[str] scenes_captions: A list of captions for key scenes in the video.
+    :param str srt_context: The full audio transcript of the video.
+
+    :rtype: str
+    :returns: The prompt for generating a comprehensive description of the video.
+
+    """
     prompt = (
         "You are a highly intelligent AI with the ability to generate rich and comprehensive descriptions of videos. "
         "Below are detailed captions of key frames from various scenes. Your task is to synthesize these into a cohesive and vivid description of the entire video:\n"
@@ -218,141 +155,18 @@ def create_prompt_for_video_description(scenes_captions: List[str], srt_context:
     return prompt
 
 
-def create_lom_prompt_for_video(scenes_captions: List[str], srt_context: str) -> str:
-    prompt = (
-        "You are a highly intelligent AI capable of generating detailed Learning Object Metadata (LOM) for educational videos. "
-        "Below are detailed captions of key frames from various scenes. Your task is to synthesize these into a comprehensive LOM object for the video, "
-        "focusing on the educational attributes:\n"
-    )
-
-    subtitles = parse_srt(srt_context)
-    if subtitles:
-        subtitle_context = "\n".join([f"{i}: {subtitle}" for i, subtitle in enumerate(subtitles, start=1)])
-    else:
-        subtitle_context = "No subtitles available"
-    
-    # Add captions of each scene to the prompt
-    for scene_number, scene_caption in enumerate(scenes_captions, start=1):
-        prompt += f"\nScene:{scene_number} Caption: {scene_caption}:\n"
-
-    prompt += ( 
-        "\nUsing the above key frame descriptions, please generate a detailed Learning Object Metadata (LOM) object for the video. "
-        "Ensure to include the following educational attributes:\n"
-        "- **Learning Resource Type**: The type of learning resource (e.g., lecture, tutorial, demonstration).\n"
-        "- **Interactivity Type**: The type of interactivity (e.g., passive, active, mixed).\n"
-        "- **Interactivity Level**: The degree of interactivity (e.g., low, medium, high).\n"
-        "- **Intended End User Role**: The primary user role (e.g., student, teacher).\n"
-        "- **Context**: The educational context (e.g., higher education, vocational training).\n"
-        "- **Difficulty Level**: The difficulty level of the content (e.g., beginner, intermediate, advanced).\n"
-        "- **Typical Learning Time**: The typical time required to complete the learning from the video.\n"
-        "- **Discipline**: The academic or professional discipline relevant to the video content.\n"
-        "- **Educational Level**: The education level targeted by the video (e.g., undergraduate, professional development).\n"
-        "Additionally, consider the following audio script context while crafting your description:\n"
-        f"{subtitle_context}"
-        "\nOutput the LOM object in the following JSON structure:\n"
-        "{\n"
-        "  \"LearningResourceType\": \"\",\n"
-        "  \"InteractivityType\": \"\",\n"
-        "  \"InteractivityLevel\": \"\",\n"
-        "  \"IntendedEndUserRole\": \"\",\n"
-        "  \"Context\": \"\",\n"
-        "  \"DifficultyLevel\": \"\",\n"
-        "  \"TypicalLearningTime\": \"\",\n"
-        "  \"Discipline\": \"\",\n"
-        "  \"EducationalLevel\": \"\"\n"
-        "}\n"
-    )
-    return prompt
-
-
-def create_lom_prompt_for_video_with_transcript(audio_transcript: List[str]) -> str:
-    prompt = (
-        "You are a highly intelligent AI capable of generating detailed Learning Object Metadata (LOM) for educational videos. "
-        "Below is a detailed transcript from the audio of the video. Your task is to synthesize this into a comprehensive LOM object for the video, "
-        "focusing on the educational attributes:\n"
-    )
-    audio_transcript = parse_srt(audio_transcript)
-    transcript_context = "\n".join([f"{i}: {line}" for i, line in enumerate(audio_transcript, start=1)])
-    
-    prompt += ( 
-        f"\nAudio Transcript:\n{transcript_context}\n"
-        "\nUsing the above transcript, please generate a detailed Learning Object Metadata (LOM) object for the video. "
-        "Ensure to include the following educational attributes:\n"
-        "- **Learning Resource Type**: The type of learning resource (e.g., lecture, tutorial, demonstration).\n"
-        "- **Interactivity Type**: The type of interactivity (e.g., passive, active, mixed).\n"
-        "- **Interactivity Level**: The degree of interactivity (e.g., low, medium, high).\n"
-        "- **Intended End User Role**: The primary user role (e.g., student, teacher).\n"
-        "- **Context**: The educational context (e.g., higher education, vocational training).\n"
-        "- **Difficulty Level**: The difficulty level of the content (e.g., beginner, intermediate, advanced).\n"
-        "- **Typical Learning Time**: The typical time required to complete the learning from the video.\n"
-        "- **Discipline**: The academic or professional discipline relevant to the video content.\n"
-        "- **EducationalLevel**: The education level targeted by the video (e.g., undergraduate, professional development).\n"
-        "- **TargetAudienceAge**: The average age of the target audience for the video (e.g., 25 years old, mid-30s).\n"
-        "Output the LOM object in the following JSON structure:\n"
-        "{\n"
-        "  \"LearningResourceType\": \"\",\n"
-        "  \"InteractivityType\": \"\",\n"
-        "  \"InteractivityLevel\": \"\",\n"
-        "  \"IntendedEndUserRole\": \"\",\n"
-        "  \"Context\": \"\",\n"
-        "  \"DifficultyLevel\": \"\",\n"
-        "  \"TypicalLearningTime\": \"\",\n"
-        "  \"Discipline\": \"\",\n"
-        "  \"EducationalLevel\": \"\",\n"
-        "  \"TargetAudienceAge\": \"\",\n" "}\n"
-    )
-    return prompt
-
-def create_lom_prompts_for_video_with_transcript_iterate(audio_transcript: List[str]) -> List[str]:
-
-    base_prompt = (
-       "Below is a detailed transcript from the audio of the video. Your task is to synthesize this into a short comprehensive Bullet Point \n\n"
-       "For following Task: "
-    )
-    
-    # Parse the transcript assuming it's in subtitle format (like SRT)
-    audio_transcript = parse_srt(audio_transcript)
-    transcript_context = "\n".join([f"{i}: {line}" for i, line in enumerate(audio_transcript, start=1)])
-    
-    # LOM attributes with their descriptions
-    
-    lom_attributes = {
-        "Learning Resource Type": "Provide the type of learning resource (e.g., lecture, tutorial, demonstration).",
-        "Interactivity Type": "Specify the interactivity type (e.g., passive, active, mixed).",
-        "Interactivity Level": "Specify the degree of interactivity (e.g., low, medium, high).",
-        "Intended End User Role": "Describe the primary user role (e.g., student, teacher).",
-        "Context": "Describe the educational context (e.g., higher education, vocational training).",
-        "Difficulty Level": "Indicate the difficulty level of the content (e.g., beginner, intermediate, advanced).",
-        "Typical Learning Time": "State the typical time required to complete the learning from the video (e.g., 10-20 hours, 20 mins).",
-        "Discipline": "Specify the academic or professional discipline relevant to the video content (e.g., Computer Science, Sociology, Mathematics, Psychology).",
-        "Educational Level": "Specify the education level targeted by the video (e.g., undergraduate, professional development).",
-        "Target Audience Age": "Provide the average age of the target audience for the video (e.g., 25 years old, mid-30s)."
-    }
-    
-    prompts = {}
-
-    # Iterate over each attribute and generate the prompt
-    for attribute, description in lom_attributes.items():
-        prompt = (
-            base_prompt +
-            f"{description}\n\n"
-            "Focus on providing the content only, WITHOUT explanations or additional details.\n\n"
-            "Use Following captions for from scenes for context:\n\n"
-             f"{transcript_context}\n\n"
-             f"{attribute}:"
-             
-        )
-        prompts[attribute] = prompt   
-        
-    return prompts
-
 def create_lom_prompts_for_video_with_scenes_iterate(scenes_captions: List[str]) -> List[str]:
-    base_prompt = (
-        "Below are captions from scenes of the video. Your task is to synthesize these into short comprehensive keywords.\n\n"
-        "Just give the words without any addiontal Context\n\n"
-        "For the following Task:\n"
-    )
 
+    """
+    Creates a set of prompts for generating LOM metadata attributes based on scene captions.
+
+    :param List[str] scenes_captions: A list of captions for key scenes in the video.
+
+    :rtype: dict
+    :returns: A dictionary containing the LOM attributes as keys and the corresponding prompts as values.
+    
+    """
+  
     # LOM attributes with their descriptions    
     lom_attributes = {
         "Learning Resource Type": "Provide the type of learning resource (e.g., lecture, tutorial, demonstration).",
@@ -370,7 +184,6 @@ def create_lom_prompts_for_video_with_scenes_iterate(scenes_captions: List[str])
     # Iterate over each attribute and generate the prompt
     for attribute, description in lom_attributes.items():
         prompt = (
-           # base_prompt +
             f"{description}\n\n"
             "Focus on providing the content only, WITHOUT explanations or additional details.\n\n"
             "Use Following Captions of Scenes of the video for context:\n\n"    
@@ -385,7 +198,9 @@ def create_lom_prompts_for_video_with_scenes_iterate(scenes_captions: List[str])
     return prompts
 
 def parse_srt(srt_content: str)-> List[str]:
-    """Parses SRT file content and returns a list of subtitle texts.
+    """
+    Parses SRT file content and returns a list of subtitle texts.
+
     :param str srt_content: The content of the SRT file.
 
     :rtype: List[str]
@@ -424,7 +239,6 @@ def save_data_to_csv(filepath: str, data:any, header: List[str]=['Source Filenam
 
         for row in data:
             writer.writerow(row)
-
 
 def create_scene_caption_with_audio_of_scene(model,tokenizer, subtitles,keyframes_path,output_path,scene_path=""):
     """Generates captions for scenes using keyframes and subtitles.
@@ -494,24 +308,6 @@ def create_key_concept_for_scene_with_audio_of_scene(model:any,tokenizer:any, sr
     return  output_path  
 
 
-def create_scene_caption_with_audio_of_whole_video(model,tokenizer, subtitles,keyframes_path,output_path,):
-    # Check if the output path exists
-    if os.path.exists(output_path):
-        # Delete the existing CSV file
-        os.remove(output_path) 
-    dict_list = get_content_of_column_by_source_and_column_names(keyframes_path, ["CAPTION","Subtitle",""])
-    for source_filename, column_data in dict_list.items():
-        print(source_filename)
-
-        llm_prompt_for_scene = create_prompt_for_scene_with_Audio_of_whole_video(column_data, subtitles, "CAPTION", "Subtitle")
-        print(llm_prompt_for_scene)
-        encodeds =  tokenizer(llm_prompt_for_scene, return_tensors="pt").to("cuda")
-        prompt_length = encodeds['input_ids'].shape[1]
-        generated_ids = model.generate(encodeds['input_ids'],max_new_tokens=600, do_sample=True)
-        decoded = tokenizer.decode(generated_ids[0][prompt_length:],skip_special_tokens=True)
-        caption = decoded.replace('\n', ' ').replace('\r', ' ')
-        save_data_to_csv(output_path, [{"Source Filename": source_filename, "Caption": caption}])
-    return  output_path  
 
 def create_video_caption(model :any,tokenizer:any, srt_subtitles:str,input_path:str)-> str:
     
@@ -537,45 +333,20 @@ def create_video_caption(model :any,tokenizer:any, srt_subtitles:str,input_path:
     caption = decoded.replace('\n', ' ').replace('\r', ' ')
     return caption
 
-
-def create_lom_caption(model,tokenizer, subtitles,input_path):
-    scene_dict=get_scene_caption_from_csv(input_path, "Caption")
-    prompt=create_lom_prompt_for_video(scene_dict,subtitles)
-    print(prompt)
-    encodeds =  tokenizer(prompt, return_tensors="pt").to("cuda")
-    prompt_length = encodeds['input_ids'].shape[1]
-    generated_ids = model.generate(encodeds['input_ids'],max_new_tokens=20, do_sample=True, )
-    decoded = tokenizer.decode(generated_ids[0][prompt_length:],skip_special_tokens=True)
-    caption = decoded.replace('\n', ' ').replace('\r', ' ')
-
-    return caption
-
-def create_lom_caption_with_just_subtitle(model,tokenizer, subtitles,input_path):
-    prompt=create_lom_prompt_for_video_with_transcript(subtitles)
-    print(prompt)
-    encodeds =  tokenizer(prompt, return_tensors="pt").to("cuda")
-    prompt_length = encodeds['input_ids'].shape[1]
-    generated_ids = model.generate(encodeds['input_ids'],max_new_tokens=100, do_sample=True, )
-    decoded = tokenizer.decode(generated_ids[0][prompt_length:],skip_special_tokens=True)
-    caption = decoded.replace('\n', ' ').replace('\r', ' ')
-
-    return caption
-
-
-def create_lom_caption_with_just_subtitle_List(model,tokenizer, subtitles,input_path):
-    prompts=create_lom_prompts_for_video_with_transcript_iterate(subtitles)
-    captions = {}
-    for attribute, prompt in prompts.items():
-        print(prompt)
-        encodeds = tokenizer(prompt, return_tensors="pt").to("cuda")
-        prompt_length = encodeds['input_ids'].shape[1]
-        generated_ids = model.generate(encodeds['input_ids'], max_new_tokens=10, pad_token_id=tokenizer.eos_token_id,do_sample=True,num_return_sequences=1)
-        decoded = tokenizer.decode(generated_ids[0][prompt_length:], skip_special_tokens=True)
-        caption = decoded.replace('\n', ' ').replace('\r', ' ')
-        captions[attribute] = caption
-    return captions
-
 def create_lom_caption_with_just_scenes_List(model,tokenizer, subtitles,input_path):
+    """
+    Generates LOM metadata attributes for the video using the scene captions
+
+    :param model: The language model to generate LOM metadata attributes.
+    :param tokenizer: The tokenizer for the language model.
+    :param subtitles: The subtitles of the video.
+    :param input_path: The path to the keyframes CSV file.
+
+    :rtype: dict
+    :returns: A dictionary containing the LOM metadata attributes and their corresponding values.
+
+
+    """
     scene_dict=get_scene_caption_from_csv(input_path, "Caption")
     prompts=create_lom_prompts_for_video_with_scenes_iterate(scene_dict)
     captions = {}
@@ -590,28 +361,6 @@ def create_lom_caption_with_just_scenes_List(model,tokenizer, subtitles,input_pa
     return captions
 
 
-if __name__ == '__main__':
 
-    quantization_config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_compute_dtype=torch.float16,
-        bnb_4bit_use_double_quant=True,
-    )
-    input_string = "https://www.youtube.com/watch?v=d56mG7DezGs"
-    downloader = YouTubeVideo(input_string)
-    path, subtitles = downloader.download_video_and_subtitles()
-    model_id = "mistralai/Mistral-7B-Instruct-v0.3"
-    # model = AutoModelForCausalLM.from_pretrained(model_id,quantization_config=quantization_config,attn_implementation="flash_attention_2", torch_dtype=torch.float16)
-    # tokenizer=AutoTokenizer.from_pretrained(model_id)
-    # create_scene_caption(model,tokenizer, subtitles, "C:/uni/awt-pj-ss24-finding_scenes-2/videos/keyframes/extracted_keyframes.csv","./test2.csv")
-    # gc.collect()
-    # model=None
-    torch.cuda.empty_cache()
-    model = AutoModelForCausalLM.from_pretrained(model_id,quantization_config=quantization_config,attn_implementation="flash_attention_2", torch_dtype=torch.float16)
-    tokenizer=AutoTokenizer.from_pretrained(model_id)
-    caption=create_lom_caption_with_just_subtitle_List(model,tokenizer, subtitles,"C:/uni/awt-pj-ss24-finding_scenes-2/videos/keyframes/llm_captions.csv")
-    # Print the JSON
-    print(caption)
 
     

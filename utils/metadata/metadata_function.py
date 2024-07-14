@@ -7,8 +7,10 @@ from utils.general.word_counter import most_frequent_noun
 def get_metadata_from_scene_file(path_to_scene_csv: str) -> List[SceneObject]:
     """ 
      This function reads the scene csv file and extracts the metadata for each scene object.
+
      :param path_to_scene_csv: The path to the scene csv file.
      :rtype: List[SceneObject]
+
      :returns: A list of SceneObject objects with the metadata extracted from the scene
     """
     scene_objects = []
@@ -25,14 +27,18 @@ def get_metadata_from_scene_file(path_to_scene_csv: str) -> List[SceneObject]:
     return scene_objects
 
 def get_metadata_from_keyframe_file(path_to_keyframes_csv: str, scene_objects: List[SceneObject], tasks:dict) -> List[SceneObject]:
-    """ This function reads the keyframes csv file and extracts the metadata for each scene object.
+    """ 
+
+     This function reads the keyframes csv file and extracts the metadata for each scene object.
 
      :param path_to_keyframes_csv: The path to the keyframes csv file.
      :param scene_objects: A list of SceneObject objects.
      :param tasks: A dictionary of tasks and their corresponding attributes.
 
      :rtype: List[SceneObject]
-     :returns: A list of SceneObject objects with the metadata extracted from the keyframes csv file."""
+     :returns: A list of SceneObject objects with the metadata extracted from the keyframes csv file.
+
+    """
     
     with open(path_to_keyframes_csv, "r") as f:
         reader = csv.DictReader(f)
@@ -67,7 +73,8 @@ def get_metadata_from_keyframe_file(path_to_keyframes_csv: str, scene_objects: L
     return scene_objects
 
 def get_attribute_by_frequency(scene_objects: List[SceneObject], attribute: str) -> List[SceneObject]:
-    """ This function gets the most frequent noun from a list of strings and sets it as the attribute value for each SceneObject in the list.
+    """ 
+     This function gets the most frequent noun from a list of strings and sets it as the attribute value for each SceneObject in the list.
 
      :param scene_objects: A list of SceneObject objects.
      :param attribute: The attribute to set.

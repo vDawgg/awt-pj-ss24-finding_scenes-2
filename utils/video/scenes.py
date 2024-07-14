@@ -7,11 +7,6 @@ from pathlib import Path
 from scenedetect.scene_manager import  write_scene_list
 from scenedetect import (AdaptiveDetector, split_video_ffmpeg, open_video, detect)
 
-
-
-
-
-
 def get_scenes(video_path: str) -> str:
 
     """
@@ -50,7 +45,3 @@ def get_scenes(video_path: str) -> str:
 
     print("Done\n")
     return scene_list_csv
-
-
-if __name__ == '__main__':
-    get_scenes(os.path.join(VIDEO_DIR, 'Rust in 100 Seconds.mp4'))

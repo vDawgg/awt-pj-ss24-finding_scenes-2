@@ -3,9 +3,10 @@ from utils.constants import VIDEO_DIR
 import os
 import yt_dlp
 from pytube import YouTube
-from typing import List, Tuple, Union
+from typing import List, Union
 
 class YouTubeVideo:
+
     def __init__(self, url: str, output_path: str = VIDEO_DIR):
         """Initializes a YouTubeVideo object.
 
@@ -29,42 +30,8 @@ class YouTubeVideo:
                 return key  # Return the first key found
         return None  # Return None if no key is found
 
-    def download_video_and_subtitles(self) -> Union[Tuple[str, str], Tuple[str, None]]:
-        """Downloads a YouTube video and its subtitles if available.
-
-        :rtype: Union[Tuple[str, str], Tuple[str, None]]
-        :returns: A tuple containing the path of the downloaded video and, if available, the subtitles in SRT format. If no subtitles are found, the second element of the tuple is None.
-        """
-        try:
-            yt = self.yt
-            yt.bypass_age_gate()
-            video = yt.streams.filter(progressive=True, file_extension='mp4').first()
-            if video:
-                title = ''.join(c for c in yt.title if c.isalnum() or c.isspace())
-                print(f"Downloading '{title}'...")
-                #video.download(self.output_path, filename=title +".mp4")
-                print("Download completed!")
-
-                priority_languages = ['en', 'a.en', 'de', 'a.de']
-                caption_key = self.get_first_existing_key(priority_languages, yt.captions.keys())
-
-                if not caption_key:
-                    print("Video has no captions in English or German")
-                    return self.output_path + title + ".mp4", None
-
-                subtitles = yt.captions[caption_key]
-
-                if subtitles:
-                    return "", subtitles.generate_srt_captions()
-
-            else:
-                print("No video found with mp4 format.")
-        except Exception as e:
-            print(f"Error downloading video: {e}")
-
     def download_video(self) -> str:
         """Downloads a YouTube video.
-
         :rtype: str
         :returns: The path of the downloaded video file."""
         title = ''.join(c for c in self.yt.title if c.isalnum() or c.isspace()) 
@@ -102,12 +69,3 @@ class YouTubeVideo:
         except Exception as e:
             print(f"Error fetching subtitles: {e}")
             return None
-
-if __name__ == "__main__":
-    downloader = YouTubeVideo("https://www.youtube.com/watch?v=L0koqAJe4lc")            
-    subtitles = downloader.download_subtitles()
-    print(subtitles)
-
-                 
-    
-    

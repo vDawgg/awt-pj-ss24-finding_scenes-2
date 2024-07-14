@@ -1,20 +1,35 @@
 import pysrt
-from typing import Union
-import pandas as pd
-from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip
-from utils.video.youtube import YouTubeVideo
 import unicodedata
+import pandas as pd
+from typing import Union
+from utils.video.youtube import YouTubeVideo
+from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip
+
+
 
 
 def time_to_seconds(time_object: pysrt.SubRipItem)-> int:
+    """ 
+    Convert a pysrt.SubRipItem object to seconds.
+
+    :param pysrt.SubRipItem: A pysrt.SubRipItem object representing a timestamp.
+    :rtype: int
+    :returns: The timestamp in seconds.
+    """
     return time_object.hours * 3600 + time_object.minutes * 60 + time_object.seconds + time_object.milliseconds / 1000
 
 def time_to_milliseconds(time_object: pysrt.SubRipItem) -> int:
+    """ 
+    Convert a pysrt.SubRipItem object to milliseconds.
+
+    :param pysrt.SubRipItem: A pysrt.SubRipItem object representing a timestamp.
+    :rtype: int
+    :returns: The timestamp in milliseconds.
+    """
     return (time_object.hours * 3600 * 1000 + time_object.minutes * 60 * 1000 + time_object.seconds * 1000 + time_object.milliseconds)
 
 
 def create_video_with_subtitles(subtitles_srt: str,path: str,fontsize:int=24, font: str='Arial', color: str='yellow', debug :bool = False, bg_color:str="black")-> str:
-
     """
     This function takes a SRT subtitles string, a path to a video file, and optional parameters for subtitle appearance. 
     It overlays the subtitles onto the video and returns the path of the resulting video file.
@@ -71,7 +86,15 @@ def create_video_with_subtitles(subtitles_srt: str,path: str,fontsize:int=24, fo
     return output_video_path
 
 def search_subtitle(srt_string: str, timestamp_seconds: int)-> Union[str, None]:
-    """Search for a subtitle by timestamp in seconds in a SRT string ."""
+    """Search for a subtitle by timestamp in seconds in a SRT string.
+
+    :param str srt_string: A string containing the subtitles in SubRip (SRT) format.
+    :param int timestamp_seconds: The timestamp in seconds to search for.
+
+    :rtype: Union[str, None]
+    :returns: The subtitle text if found, otherwise None.
+    
+    """
     subs= pysrt.from_string(srt_string)
 
     for sub in subs:
@@ -86,7 +109,14 @@ def search_subtitle(srt_string: str, timestamp_seconds: int)-> Union[str, None]:
     return None     
 
 def search_subtitle_for_scene(srt_string: str, csv_file: str) -> dict[str, str]:
-    """Extract subtitles for each scene based on timestamps."""
+    """Extract subtitles for each scene based on timestamps.
+
+    :param str srt_string: A string containing the subtitles in SubRip (SRT) format.
+    :param str csv_file: The file path of the CSV file containing scene timestamps.
+
+    :rtype: dict[str, str]
+    :returns: A dictionary containing the subtitles for each scene based on timestamps.
+    """
     
     # Read scenes from the CSV file
     scenes_df = pd.read_csv(csv_file)

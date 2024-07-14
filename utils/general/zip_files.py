@@ -2,7 +2,13 @@ import os
 import zipfile
 
 
-def zip_files(directory, output_zip):
+def zip_files(directory:str, output_zip:str)-> None:
+    """Zip all files in a directory into a single zip file.
+    :param str directory: The directory containing the files to zip.
+    :param str output_zip: The path to the output zip file.
+    :rtype: None
+    :return: None
+    """
     with zipfile.ZipFile(output_zip, 'w') as zipf:
         for root, dirs, files in os.walk(directory):
             for file in files:

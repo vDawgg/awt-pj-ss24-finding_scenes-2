@@ -1,20 +1,22 @@
-import gc
 import os
 import csv
-from pathlib import Path
-from typing import List
 import torch
+from typing import List
+from utils.video.youtube import YouTubeVideo
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
-from utils.llm.model import LLMModel  # Ensure you have this custom module
-from utils.model.model import Model  # Ensure you have this custom module
+
 from utils.video.subtitles import search_subtitle_for_scene
-import json
-from utils.video.youtube import YouTubeVideo  # Ensure you have this custom module
 
+def create_prompt_of_scene_for_caption_using_scene_subtitles(scene_object:any, scene_subtitles: str) -> str:
+    """Creates a detailed description prompt for a scene using keyframe descriptions and corresponding subtitles of the scene.
 
-def create_prompt_of_scene_for_caption_using_scene_subtitles(scene_object, scene_subtitles: str) -> str:
-    """Creates a detailed description prompt for a scene using keyframe descriptions and corresponding subtitles of the scene."""
     
+    :param str scene_object: The scene object containing keyframe descriptions and subtitles.
+    :param str scene_subtitles: The full audio transcript of the scene.
+
+    :rtype: str
+    :returns: The prompt for generating a detailed description of the scene.
+    """
     # Gather keyframe descriptions with corresponding subtitles
     key_frame_descriptions = "\n".join(
         [f" Keyframe Description : {description_caption}\nAudio transscript: {description_subtitle}" for i, (description_caption, description_subtitle) in enumerate(zip(scene_object["CAPTION"], scene_object["Subtitle"]), start=1)]
@@ -40,8 +42,15 @@ def create_prompt_of_scene_for_caption_using_scene_subtitles(scene_object, scene
     return prompt
 
 def create_prompt_of_scene_for_key_concepts(scene_object, scene_subtitles: str) -> str:
-    """Creates a detailed description prompt for identifying key concepts in a scene using keyframe descriptions and corresponding subtitles of the scene."""
-    
+    """Creates a detailed description prompt for identifying key concepts in a scene using keyframe descriptions and corresponding subtitles of the scene.
+
+    :param str scene_object: The scene object containing keyframe descriptions and subtitles.
+    :param str scene_subtitles: The full audio transcript of the scene.
+
+    :rtype: str
+    :returns: The prompt for generating a detailed description of the scene.
+
+    """
     # Gather keyframe concepts with corresponding subtitles
     key_frame_concepts = "\n".join(
         [f"Keyframe Concept: {concept_caption}\n Audio transscript: {concept_subtitle}" for i, (concept_caption, concept_subtitle) in enumerate(zip(scene_object["KEY-CONCEPTS"], scene_object["Subtitle"]), start=1)]
@@ -64,11 +73,22 @@ def create_prompt_of_scene_for_key_concepts(scene_object, scene_subtitles: str) 
     "Be short and concise in your response.\n\n"
     "Keyframe Concepts: "
     )
-    
     return prompt
 
-def create_prompt_for_scene5(scene_object, audio_script, caption: str, subtitle: str) -> str:
-    """Creates a detailed description prompt for a scene using keyframe descriptions and corresponding transcripts."""
+
+def create_prompt_for_scene_with_Audio_of_whole_video(scene_object: any, audio_script:str, caption: str, subtitle: str) -> str:
+    """Creates a detailed description prompt for a scene using keyframe descriptions and corresponding transcripts.
+
+    :param any scene_object: The scene object containing keyframe descriptions and subtitles.
+    :param str audio_script: The full audio transcript of the video.
+    :param str caption: The keyframe description column name.
+    :param str subtitle: The keyframe subtitle column name.
+
+    :rtype: str
+    :returns: The prompt for generating a detailed description of the scene.
+
+
+    """
     
     # Gather keyframe descriptions with corresponding audio transcripts
     key_frame_descriptions = "\n".join(
@@ -91,9 +111,7 @@ def create_prompt_for_scene5(scene_object, audio_script, caption: str, subtitle:
     f"{key_frame_descriptions}\n\n"
     "Audio Script from the Whole Video for Additional Context:\n"
     f"{subtitle_context}\n\n"
-    "Generate a detailed description of the scene:")
-
-    
+    "Generate a detailed description of the scene:")  
     return prompt
 
 def create_prompt_for_scene_with_context_of_different_scene(scene_object, audio_script, caption: str, subtitle: str) -> str:
@@ -121,13 +139,22 @@ def create_prompt_for_scene_with_context_of_different_scene(scene_object, audio_
     "Audio Script from the Whole Video for Additional Context:\n"
     f"{subtitle_context}\n\n"
     "Generate a detailed description of the scene:")
-
-    
     return prompt
 
 
 
 def get_content_of_column_by_source_and_column_names(filepath, column_names: List[str]) -> dict:
+    """
+    Extracts the content of specified columns from a CSV file and organizes it by source filename.
+
+    :param str filepath: The path to the CSV file.
+    :column_names: The list of column names to extract content from.
+
+    :rtype: dict
+    :returns: A dictionary containing the content organized by source filename.
+
+    """
+
     dict_list = {}
     with open(filepath, newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
@@ -141,7 +168,18 @@ def get_content_of_column_by_source_and_column_names(filepath, column_names: Lis
                 dict_list[source_filename][column_name].append(row[column_name])
     return dict_list
 
-def get_scene_caption_from_csv(filepath, column_name):
+def get_scene_caption_from_csv(filepath:str, column_name:str)-> List[str]:
+
+    """
+    Extracts the scene captions from a CSV file.
+    
+    :param str filepath: The path to the CSV file.
+    :param str column_name: The name of the column containing the scene captions.
+    
+    :rtype: List[str]
+    :returns: A list of scene captions.
+    """
+
     descriptions = []
     with open(filepath, newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
@@ -177,7 +215,6 @@ def create_prompt_for_video_description(scenes_captions: List[str], srt_context:
         "Just describe the video; don't explain it in detail.\n\n"
         "Give me the description of the video:"
     )
-    
     return prompt
 
 
@@ -225,10 +262,8 @@ def create_lom_prompt_for_video(scenes_captions: List[str], srt_context: str) ->
         "  \"EducationalLevel\": \"\"\n"
         "}\n"
     )
-    
     return prompt
 
-from typing import List
 
 def create_lom_prompt_for_video_with_transcript(audio_transcript: List[str]) -> str:
     prompt = (
@@ -266,10 +301,7 @@ def create_lom_prompt_for_video_with_transcript(audio_transcript: List[str]) -> 
         "  \"EducationalLevel\": \"\",\n"
         "  \"TargetAudienceAge\": \"\",\n" "}\n"
     )
-    
     return prompt
-
-from typing import List
 
 def create_lom_prompts_for_video_with_transcript_iterate(audio_transcript: List[str]) -> List[str]:
 
@@ -315,12 +347,12 @@ def create_lom_prompts_for_video_with_transcript_iterate(audio_transcript: List[
     return prompts
 
 def create_lom_prompts_for_video_with_scenes_iterate(scenes_captions: List[str]) -> List[str]:
-
     base_prompt = (
         "Below are captions from scenes of the video. Your task is to synthesize these into short comprehensive keywords.\n\n"
         "Just give the words without any addiontal Context\n\n"
         "For the following Task:\n"
     )
+
     # LOM attributes with their descriptions    
     lom_attributes = {
         "Learning Resource Type": "Provide the type of learning resource (e.g., lecture, tutorial, demonstration).",
@@ -352,8 +384,14 @@ def create_lom_prompts_for_video_with_scenes_iterate(scenes_captions: List[str])
         
     return prompts
 
-def parse_srt(srt_content):
-    """Parses SRT file content and returns a list of subtitle texts."""
+def parse_srt(srt_content: str)-> List[str]:
+    """Parses SRT file content and returns a list of subtitle texts.
+    :param str srt_content: The content of the SRT file.
+
+    :rtype: List[str]
+    :return: A list of subtitle texts.
+
+    """
     subtitles = []
     srt_blocks = srt_content.strip().split('\n\n')
     for block in srt_blocks:
@@ -363,34 +401,16 @@ def parse_srt(srt_content):
             subtitles.append(subtitle_text)
     return subtitles
 
-def parse_srt1(srt_content):
-    """Parses SRT file content and returns a list of tuples containing (occurrence, subtitle text)."""
-    subtitles = []
-    srt_blocks = srt_content.strip().split('\n\n')
-    for block in srt_blocks:
-        lines = block.split('\n')
-        if len(lines) >= 3:
-            occurrence = lines[0].strip()
-            subtitle_text = ' '.join(lines[2:])
-            subtitles.append((occurrence, subtitle_text))
-    return subtitles
+def save_data_to_csv(filepath: str, data:any, header: List[str]=['Source Filename', 'Caption']):
+    """Saves data to a CSV file or creates a new file if it doesn't exist.
 
+       :param str filepath: The path to the CSV file.
+       :param list data: The data to be saved in the CSV file.
+       :param list header: The header of the CSV file.
 
-
-
-def get_values(data, key):
-    values = []
-    for obj_name, obj in data.items():
-        if key in obj:
-            if isinstance(obj[key], list):
-                values.extend(obj[key])
-            else:
-                values.append(obj[key])
-    return values
-
-
-def save_data_to_csv(filepath, data, header=['Source Filename', 'Caption']):
-    """Saves data to a CSV file or creates a new file if it doesn't exist."""
+       :rtype: None
+       :returns: None
+    """
     file_exists = os.path.isfile(filepath)
 
     # Create the directory if it doesn't exist
@@ -407,6 +427,18 @@ def save_data_to_csv(filepath, data, header=['Source Filename', 'Caption']):
 
 
 def create_scene_caption_with_audio_of_scene(model,tokenizer, subtitles,keyframes_path,output_path,scene_path=""):
+    """Generates captions for scenes using keyframes and subtitles.
+
+    :param model: The language model to generate captions.
+    :param tokenizer: The tokenizer for the language model.
+    :param subtitles: The subtitles of the video.
+    :param keyframes_path: The path to the keyframes CSV file.
+    :param output_path: The path to save the generated captions.
+    :param scene_path: The path to the scene CSV file.
+    
+    :rtype: str
+    :returns: The path to the saved CSV file."""
+
     # Check if the output path exists
     if os.path.exists(output_path):
         # Delete the existing CSV file
@@ -427,14 +459,27 @@ def create_scene_caption_with_audio_of_scene(model,tokenizer, subtitles,keyframe
         save_data_to_csv(output_path, [{"Source Filename": source_filename, "Caption": caption}])
     return  output_path  
 
-def create_key_concept_for_scene_with_audio_of_scene(model,tokenizer, subtitles,keyframes_path,output_path,scene_path=""):
+def create_key_concept_for_scene_with_audio_of_scene(model:any,tokenizer:any, srt_subtitles:str,keyframes_path:str,output_path:str,scene_path:str="")->str:
+    """ Generates key concepts for scenes using keyframes and subtitles
+
+    :param any model: The language model to generate key concepts.
+    :param any tokenizer: The tokenizer for the language model.
+    :param str subtitles: The subtitles of the video.
+    :param str keyframes_path: The path to the keyframes CSV file.
+    :param str output_path: The path to save the generated key concepts.
+    :param str scene_path: The path to the scene CSV file.
+
+    :rtype: str
+    :returns: The path to the saved CSV file.
+    """
+
     if os.path.exists(output_path):
         # Delete the existing CSV file
         os.remove(output_path)
 
     dict_list = get_content_of_column_by_source_and_column_names(keyframes_path, ["KEY-CONCEPTS","Subtitle"])
     print(dict_list)
-    subtiles_dict = search_subtitle_for_scene(subtitles,scene_path)
+    subtiles_dict = search_subtitle_for_scene(srt_subtitles,scene_path)
     for source_filename, column_data in dict_list.items():
         print(source_filename)
         subtitles_of_scene = subtiles_dict[source_filename]
@@ -458,7 +503,7 @@ def create_scene_caption_with_audio_of_whole_video(model,tokenizer, subtitles,ke
     for source_filename, column_data in dict_list.items():
         print(source_filename)
 
-        llm_prompt_for_scene = create_prompt_for_scene5(column_data, subtitles, "CAPTION", "Subtitle")
+        llm_prompt_for_scene = create_prompt_for_scene_with_Audio_of_whole_video(column_data, subtitles, "CAPTION", "Subtitle")
         print(llm_prompt_for_scene)
         encodeds =  tokenizer(llm_prompt_for_scene, return_tensors="pt").to("cuda")
         prompt_length = encodeds['input_ids'].shape[1]
@@ -468,17 +513,30 @@ def create_scene_caption_with_audio_of_whole_video(model,tokenizer, subtitles,ke
         save_data_to_csv(output_path, [{"Source Filename": source_filename, "Caption": caption}])
     return  output_path  
 
-def create_video_caption(model,tokenizer, subtitles,input_path):
+def create_video_caption(model :any,tokenizer:any, srt_subtitles:str,input_path:str)-> str:
+    
+    """
+    Generates captions for the video using keyframes and subtitles
+
+    :param model: The language model to generate captions.
+    :param tokenizer: The tokenizer for the language model.
+    :param subtitles: The subtitles of the video.
+    :param input_path: The path to the keyframes CSV file.
+
+    :rtype: str
+    :returns: The caption generated
+    """
+
     scene_dict=get_scene_caption_from_csv(input_path, "Caption")
-    prompt=create_prompt_for_video_description(scene_dict,subtitles)
+    prompt=create_prompt_for_video_description(scene_dict,srt_subtitles)
     print(prompt)
     encodeds =  tokenizer(prompt, return_tensors="pt").to("cuda")
     prompt_length = encodeds['input_ids'].shape[1]
     generated_ids = model.generate(encodeds['input_ids'],max_new_tokens=200, do_sample=True, )
     decoded = tokenizer.decode(generated_ids[0][prompt_length:],skip_special_tokens=True)
     caption = decoded.replace('\n', ' ').replace('\r', ' ')
-
     return caption
+
 
 def create_lom_caption(model,tokenizer, subtitles,input_path):
     scene_dict=get_scene_caption_from_csv(input_path, "Caption")

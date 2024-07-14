@@ -1,11 +1,19 @@
 import os
-from typing import List, Any
-from PIL import Image
 import pandas as pd
+from PIL import Image
+from typing import List, Any
 from transformers import PreTrainedTokenizerFast
 
 
 def get_column_values(csv_file: str, column_name: str) -> List[str]:
+    """
+    Get the values of a column from a CSV file.
+
+    :param str csv_file: The path to the CSV file.
+    :param str column_name: The name of the column to get the values from.
+        
+    :rtype: List[str]
+    :return: A list of values from the specified column."""
     df = pd.read_csv(csv_file)
     if column_name in df.columns:
         return df[column_name].values.tolist()
@@ -14,6 +22,15 @@ def get_column_values(csv_file: str, column_name: str) -> List[str]:
 
 
 def get_filepaths_from_csv(csv_file: str, filename_column: str, directory: str = "videos/keyframes") -> List[str]:
+    """ Get the full filepaths of the images from the CSV file.
+    :param str csv_file: The path to the CSV file.
+    :param str filename_column: The name of the column containing the filenames.
+    :param str directory: The directory where the images are located.
+
+    :rtype: List[str]
+    :return: A list of full filepaths of the images.
+    """
+
     csv_filepath = os.path.join(directory, csv_file)
     filenames = get_column_values(csv_filepath, filename_column)
     full_filepaths = [f"{os.path.join(directory, ''.join(filename.split('_')[:-1]), filename)}" for filename in
@@ -34,7 +51,7 @@ def caption_images_idefics_2(model: Any, processor: PreTrainedTokenizerFast, tas
         directory (str, optional): The directory where the keyframe images are located. Defaults to "videos/keyframes".
 
     Returns:
-        None
+        str: The path to the CSV file containing the captions.
     """
 
     csv_filepath = os.path.join(directory, csv_file)
@@ -44,7 +61,7 @@ def caption_images_idefics_2(model: Any, processor: PreTrainedTokenizerFast, tas
 
     for task, description in tasks.items():
         task_outputs = []
-        for i, filepath in enumerate(full_filepaths):
+        for _, filepath in enumerate(full_filepaths):
             image = Image.open(filepath)
             messages = [
                 {

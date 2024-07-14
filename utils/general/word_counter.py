@@ -1,14 +1,18 @@
 import nltk
 from collections import Counter
+
 from nltk.tokenize import word_tokenize
 
-#pip install nltk
-#nltk.download('punkt')
-#nltk.download('averaged_perceptron_tagger')
-#nltk.download('stopwords')
-
 def download_nltk_resources():
-    # Download necessary NLTK resources if not already downloaded
+    """Download necessary NLTK resources if not already downloaded.
+
+    :param: None
+
+    :rtype: None
+    :returns: None
+    
+    """
+    
     try:
         nltk.data.find('tokenizers/punkt')
     except LookupError:
@@ -25,6 +29,12 @@ def download_nltk_resources():
         nltk.download('stopwords')
 
 def most_frequent_noun(strings):
+    """Get the most frequent noun from a list of strings.
+
+    :param strings: A list of strings.
+
+    :rtype: str
+    :returns: The most frequent noun from the list of strings."""
 
     download_nltk_resources()
     # Tokenize the text into words

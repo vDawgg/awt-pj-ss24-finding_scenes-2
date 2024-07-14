@@ -1,17 +1,29 @@
-from typing import List, Tuple, Union
-from pytube import YouTube
-import os
-from utils.objects.metadata_object import MetaDataObject
 from utils.constants import VIDEO_DIR
+
+import os
 import yt_dlp
+from pytube import YouTube
+from typing import List, Tuple, Union
 
 class YouTubeVideo:
     def __init__(self, url: str, output_path: str = VIDEO_DIR):
+        """Initializes a YouTubeVideo object.
+
+        :param str url: The URL of the YouTube video.
+        :param str output_path (optional): The directory path to save the downloaded video and subtitles. Default is VIDEO_DIR.
+        """
         self.url = url
         self.output_path = output_path
         self.yt = YouTube(self.url)
 
     def get_first_existing_key(self, keys_to_check: List[str], my_dict: dict) -> Union[str, None]:
+        """Returns the first key found in a dictionary from a list of keys.
+
+        :param List[str] keys_to_check: A list of keys to check in the dictionary.
+        :param dict my_dict: The dictionary to check.
+        :rtype: Union[str, None]
+        :returns: The first key found in the dictionary from the list of keys. If no key is found, returns None.
+        """
         for key in keys_to_check:
             if key in my_dict:
                 return key  # Return the first key found
@@ -51,7 +63,10 @@ class YouTubeVideo:
             print(f"Error downloading video: {e}")
 
     def download_video(self) -> str:
-        
+        """Downloads a YouTube video.
+
+        :rtype: str
+        :returns: The path of the downloaded video file."""
         title = ''.join(c for c in self.yt.title if c.isalnum() or c.isspace()) 
         path = os.path.join(self.output_path, title+'.mp4')
         ydl_opts = {

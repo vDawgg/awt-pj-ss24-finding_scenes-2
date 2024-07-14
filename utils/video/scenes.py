@@ -1,19 +1,29 @@
-from scenedetect import (AdaptiveDetector, split_video_ffmpeg, open_video, detect)
-from scenedetect.scene_manager import SceneManager, write_scene_list
-import os
-from pathlib import Path
 from utils.constants import VIDEO_DIR
+
+import os
 import pandas as pd
+from pathlib import Path
+
+from scenedetect.scene_manager import  write_scene_list
+from scenedetect import (AdaptiveDetector, split_video_ffmpeg, open_video, detect)
+
+
+
+
 
 
 def get_scenes(video_path: str) -> str:
+
     """
     This function detects scenes from a given video file and returns the directory the scenes and scene_list.csv
     are written to.
 
-    :param video_path: path to the video file
+    :param video_path str: path to the video file
+
+    :rtype: str
     :return: directory the scenes are written to
     """
+
     print("Starting scene extraction")
     scene_list = detect(video_path, AdaptiveDetector(min_scene_len=200, min_content_val=35))
 

@@ -1,26 +1,26 @@
-import subprocess
+from utils.constants import VIDEO_DIR
+
 import gc
 import json
+import torch
+import subprocess
 import pandas as pd
-from pytube import YouTube
 from pathlib import Path
+from pytube import YouTube
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
-import torch
+from utils.video.youtube import YouTubeVideo
+from utils.objects.metadata_object import MetaDataObject
 from transformers import AutoProcessor, AutoModelForVision2Seq, BitsAndBytesConfig, AutoModelForCausalLM, AutoTokenizer
 
-from utils.objects.metadata_object import MetaDataObject
-from utils.video.youtube import YouTubeVideo
+
 from utils.video.scenes import get_scenes
-from utils.video.keyframe_extraction import process_all_videos_in_csv, create_keyframes_csv
 from utils.video.subtitles import save_subtitle_in_csv
 from utils.captioning.caption_keyframes import caption_images_idefics_2
-from utils.llm.model import LLMModel
-from utils.llm.align_captions import align_video_captions
-from utils.metadata.metadata_function import get_metadata_from_scene_file, get_metadata_from_keyframe_file, set_new_content_for_metadata_attribute_for_sceneobjects
-from utils.llm.mistral_helper import create_key_concept_for_scene_with_audio_of_scene, create_lom_caption_with_just_scenes_List, create_scene_caption_with_audio_of_scene, create_scene_caption_with_audio_of_whole_video, create_video_caption
+from utils.metadata.metadata_function import get_metadata_from_scene_file, get_metadata_from_keyframe_file, set_new_content_for_metadata_attribute_for_scene_objects
+from utils.llm.mistral_helper import create_key_concept_for_scene_with_audio_of_scene, create_lom_caption_with_just_scenes_List, create_scene_caption_with_audio_of_scene,create_video_caption
 
-from utils.constants import VIDEO_DIR
+
 
 app = FastAPI()
 
@@ -170,6 +170,7 @@ def generate_metadata(url: str):
             "LANGUAGE": "What is the language used in the video this keyframe was captured from",
             "VIDEO_TYPE": "What kind of video is this, is it a tutorial, a lecture, etc",
         }
+
         title = get_youtube_video_title(url)
         output_csv = Path(VIDEO_DIR) / "keyframes" / 'extracted_keyframes.csv'
         scene_csv = Path(VIDEO_DIR) / f"{title}_scenes" / 'scene_list.csv'
@@ -189,21 +190,18 @@ def generate_metadata(url: str):
 
         scene_objects_with_llm_data=get_metadata_from_keyframe_file( path_to_keyframes_csv=output_csv ,scene_objects= scene_objects_with_extraction_data,tasks=tasks)
         create_scene_caption_with_audio_of_scene(model,tokenizer,subtitles, "./videos/keyframes/extracted_keyframes.csv","./videos/keyframes/llm_captions.csv",scene_csv)
-        scene_objects_with_llm_data=set_new_content_for_metadata_attribute_for_sceneobjects(path_to_keyframes_csv="./videos/keyframes/llm_captions.csv" ,scene_objects= scene_objects_with_extraction_data, attribute="Caption")
+        scene_objects_with_llm_data=set_new_content_for_metadata_attribute_for_scene_objects(path_to_keyframes_csv="./videos/keyframes/llm_captions.csv" ,scene_objects= scene_objects_with_extraction_data, attribute="Caption")
         create_key_concept_for_scene_with_audio_of_scene(model,tokenizer,subtitles, "./videos/keyframes/extracted_keyframes.csv","./videos/keyframes/llm_key_concepts.csv",scene_csv)
-        scene_objects_with_llm_data=set_new_content_for_metadata_attribute_for_sceneobjects(path_to_keyframes_csv="./videos/keyframes/llm_key_concepts.csv" ,scene_objects= scene_objects_with_extraction_data, attribute="KEY-CONCEPTS")
+        scene_objects_with_llm_data=set_new_content_for_metadata_attribute_for_scene_objects(path_to_keyframes_csv="./videos/keyframes/llm_key_concepts.csv" ,scene_objects= scene_objects_with_extraction_data, attribute="KEY-CONCEPTS")
         description=create_video_caption(model,tokenizer, subtitles,"./videos/keyframes/llm_captions.csv")
         video_json=create_lom_caption_with_just_scenes_List(model,tokenizer, subtitles,"./videos/keyframes/llm_captions.csv")
+
+
         metaDataObject=MetaDataObject(url, downloader.yt, scene_objects_with_llm_data)
         metaDataObject.llm_description=description
-        metaDataObject.learning_resource_type=video_json["Learning Resource Type"]
-        metaDataObject.intended_end_user_role=video_json["Intended End User Role"]
-        metaDataObject.context=video_json["Context"]
-        metaDataObject.dificulty_level=video_json["Difficulty Level"]
-        metaDataObject.discipline=video_json["Discipline"]
-        metaDataObject.target_audience_age=video_json["Target Audience Age"]
-        metaDataObject.typical_learning_time=video_json["Typical Learning Time"]
-        metaDataObject.educational_level=video_json["Educational Level"]
+
+        for key, value in video_json.items():
+          setattr(metaDataObject, key.lower().replace(" ", "_"), value)
 
         with open('metadata_idefics.json', 'w') as outfile:
             outfile.write(metaDataObject.to_json())
@@ -224,8 +222,8 @@ def run_pipeline(url: str):
         
         keyframes_csv.unlink(missing_ok=True)
         metadata_json.unlink(missing_ok=True)
-
         download_video(url)
+
     if not file_exists(str(Path(VIDEO_DIR) / f"{title}_scenes" / 'scene_list.csv')):
         keyframes_csv = (Path(VIDEO_DIR) / "keyframes" / 'extracted_keyframes.csv')
         metadata_json = Path("metadata_idefics.json")

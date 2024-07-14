@@ -1,28 +1,24 @@
-import json
+import gc
 import torch
 
-from utils.llm.mistral_helper import create_key_concept_for_scene_with_audio_of_scene, create_lom_caption_with_just_scenes_List, create_scene_caption_with_audio_of_scene, create_scene_caption_with_audio_of_whole_video, create_video_caption
-from utils.objects.metadata_object import MetaDataObject
 from utils.video.youtube import YouTubeVideo
-from utils.video.scenes import get_scenes
-from utils.video.keyframe_extraction import process_all_videos_in_csv, create_keyframes_csv
-from utils.video.subtitles import save_subtitle_in_csv
+from utils.objects.metadata_object import MetaDataObject
 from transformers import AutoProcessor, AutoModelForVision2Seq, BitsAndBytesConfig, AutoModelForCausalLM, AutoTokenizer
-from utils.captioning.caption_keyframes import caption_images_idefics_2
-from utils.llm.model import LLMModel
-from utils.llm.align_captions import align_video_captions
-import gc
 
-from utils.metadata.metadata_function import get_metadata_from_scene_file, get_metadata_from_keyframe_file, set_new_content_for_metadata_attribute_for_sceneobjects
+from utils.video.scenes import get_scenes
+from utils.video.subtitles import save_subtitle_in_csv
+from utils.captioning.caption_keyframes import caption_images_idefics_2
+from utils.video.keyframe_extraction import process_all_videos_in_csv, create_keyframes_csv
+from utils.metadata.metadata_function import get_metadata_from_scene_file, get_metadata_from_keyframe_file, set_new_content_for_metadata_attribute_for_scene_objects
+from utils.llm.mistral_helper import create_key_concept_for_scene_with_audio_of_scene, create_lom_caption_with_just_scenes_List, create_scene_caption_with_audio_of_scene, create_video_caption
 
 if __name__ == '__main__':
+
     input_string="https://www.youtube.com/watch?v=q0zmfNx7OM4"
     downloader = YouTubeVideo(input_string)
 
     subtitles = downloader.download_subtitles()
     path =downloader.download_video()
-
-    print(path)
     scene_csv = get_scenes(path)
 
     process_all_videos_in_csv(scene_csv, "./videos/keyframes", no_of_frames_to_return=3)
@@ -41,6 +37,7 @@ if __name__ == '__main__':
         _attn_implementation="flash_attention_2",
         quantization_config=quantization_config
     )
+
     processor = AutoProcessor.from_pretrained("HuggingFaceM4/idefics2-8b")
 
     directory = "./videos/keyframes"
@@ -53,19 +50,8 @@ if __name__ == '__main__':
         "LANGUAGE": "What is the language used in the video this keyframe was captured from",
         "VIDEO_TYPE": "What kind of video is this, is it a tutorial, a lecture, etc",
      }
-    # Caption LLM Context
-    # KeyConcepts LLM Context
-    # Questions Concat
-    # Text Concat
-    # Resources ?
-    # Language Häufigkeit
-    # Video Type Häufigkeit 
 
     output_csv = caption_images_idefics_2(model=model, processor=processor, tasks=tasks, directory=directory)
-    #  model_id = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
-    #  model = LLMModel(model_id, load_in_4bit=True)
-    #  align_video_captions(model, "./videos/keyframes/extracted_keyframes.csv",tasks)
-    
     scene_objects_with_extraction_data=get_metadata_from_scene_file(path_to_scene_csv=scene_csv)
 
     gc.collect()
@@ -84,21 +70,17 @@ if __name__ == '__main__':
 
     scene_objects_with_llm_data=get_metadata_from_keyframe_file( path_to_keyframes_csv=output_csv ,scene_objects= scene_objects_with_extraction_data,tasks=tasks)
     create_scene_caption_with_audio_of_scene(model,tokenizer,subtitles, "./videos/keyframes/extracted_keyframes.csv","./videos/keyframes/llm_captions.csv",scene_csv)
-    scene_objects_with_llm_data=set_new_content_for_metadata_attribute_for_sceneobjects(path_to_keyframes_csv="./videos/keyframes/llm_captions.csv" ,scene_objects= scene_objects_with_extraction_data, attribute="Caption")
+    scene_objects_with_llm_data=set_new_content_for_metadata_attribute_for_scene_objects(path_to_keyframes_csv="./videos/keyframes/llm_captions.csv" ,scene_objects= scene_objects_with_extraction_data, attribute="Caption")
     create_key_concept_for_scene_with_audio_of_scene(model,tokenizer,subtitles, "./videos/keyframes/extracted_keyframes.csv","./videos/keyframes/llm_key_concepts.csv",scene_csv)
-    scene_objects_with_llm_data=set_new_content_for_metadata_attribute_for_sceneobjects(path_to_keyframes_csv="./videos/keyframes/llm_key_concepts.csv" ,scene_objects= scene_objects_with_extraction_data, attribute="KEY-CONCEPTS")
+    scene_objects_with_llm_data=set_new_content_for_metadata_attribute_for_scene_objects(path_to_keyframes_csv="./videos/keyframes/llm_key_concepts.csv" ,scene_objects= scene_objects_with_extraction_data, attribute="KEY-CONCEPTS")
     description=create_video_caption(model,tokenizer, subtitles,"./videos/keyframes/llm_captions.csv")
     video_json=create_lom_caption_with_just_scenes_List(model,tokenizer, subtitles,"./videos/keyframes/llm_captions.csv")
+
     metaDataObject=MetaDataObject(input_string, downloader.yt, scene_objects_with_llm_data)
     metaDataObject.llm_description=description
-    metaDataObject.learning_resource_type=video_json["Learning Resource Type"]
-    metaDataObject.intended_end_user_role=video_json["Intended End User Role"]
-    metaDataObject.context=video_json["Context"]
-    metaDataObject.dificulty_level=video_json["Difficulty Level"]
-    metaDataObject.discipline=video_json["Discipline"]
-    metaDataObject.target_audience_age=video_json["Target Audience Age"]
-    metaDataObject.typical_learning_time=video_json["Typical Learning Time"]
-    metaDataObject.educational_level=video_json["Educational Level"]
+
+    for key, value in video_json.items():
+        setattr(metaDataObject, key.lower().replace(" ", "_"), value)
 
     with open('metadata_idefics.json', 'w') as outfile:
         outfile.write(metaDataObject.to_json())

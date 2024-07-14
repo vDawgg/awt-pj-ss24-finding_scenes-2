@@ -63,11 +63,11 @@ def process_all_videos_in_csv(
     Process all videos in a csv file and extract keyframes from each video.
 
     Args:
-    csv_file_path (str): The path to the csv file containing the video files.
-    output_dir (str): The directory to save the keyframes.
+       csv_file_path (str): The path to the csv file containing the video files.
+       output_dir (str): The directory to save the keyframes.
 
     Returns:
-    None
+       None
     """
 
     input_video_dir = os.path.dirname(csv_file_path)

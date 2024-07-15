@@ -28,7 +28,6 @@ def get_metadata_from_scene_file(path_to_scene_csv: str) -> List[SceneObject]:
 
 def get_metadata_from_keyframe_file(path_to_keyframes_csv: str, scene_objects: List[SceneObject], tasks:dict) -> List[SceneObject]:
     """ 
-
      This function reads the keyframes csv file and extracts the metadata for each scene object.
 
      :param path_to_keyframes_csv: The path to the keyframes csv file.
@@ -39,7 +38,6 @@ def get_metadata_from_keyframe_file(path_to_keyframes_csv: str, scene_objects: L
      :returns: A list of SceneObject objects with the metadata extracted from the keyframes csv file.
 
     """
-    
     with open(path_to_keyframes_csv, "r") as f:
         reader = csv.DictReader(f)
         for row in reader:

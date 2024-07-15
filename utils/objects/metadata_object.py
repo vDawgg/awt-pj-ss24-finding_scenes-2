@@ -30,7 +30,6 @@ class MetaDataObject:
         typical_learning_time (str): The typical learning time of the video.
         scene_objects (List[SceneObject]): The scene objects of the video.
   
-        
   Methods:
            to_json: Returns the metadata object as a JSON string.
 

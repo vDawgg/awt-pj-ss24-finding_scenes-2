@@ -1,7 +1,6 @@
 import os
 import csv
 from typing import List
-
 from utils.video.subtitles import search_subtitle_for_scene
 
 def create_prompt_of_scene_for_caption_using_scene_subtitles(scene_object:any, scene_subtitles: str) -> str:
@@ -16,9 +15,7 @@ def create_prompt_of_scene_for_caption_using_scene_subtitles(scene_object:any, s
     # Gather keyframe descriptions with corresponding subtitles
     key_frame_descriptions = "\n".join(
         [f" Keyframe Description : {description_caption}\nAudio transscript: {description_subtitle}" for i, (description_caption, description_subtitle) in enumerate(zip(scene_object["CAPTION"], scene_object["Subtitle"]), start=1)]
-    )
-    
-    # Prepare the prompt in the specified format
+    )# Prepare the prompt in the specified format
     prompt = (
     "You are a highly advanced AI tasked with generating a detailed description of a scene. You will be provided with keyframe descriptions and their corresponding subtitles, along with the full audio transcript of the scene for additional context.\n\n"
     "Instructions:\n\n"
@@ -45,7 +42,6 @@ def create_prompt_of_scene_for_key_concepts(scene_object:any, scene_subtitles: s
 
     :rtype: str
     :returns: The prompt for generating a detailed description of the scene.
-
     """
     # Gather keyframe concepts with corresponding subtitles
     key_frame_concepts = "\n".join(
@@ -70,7 +66,6 @@ def create_prompt_of_scene_for_key_concepts(scene_object:any, scene_subtitles: s
     "Keyframe Concepts: "
     )
     return prompt
-
 
 def get_content_of_column_by_source_and_column_names(filepath, column_names: List[str]) -> dict:
     """
@@ -117,7 +112,6 @@ def get_scene_caption_from_csv(filepath:str, column_name:str)-> List[str]:
     
     return descriptions
 
-
 def create_prompt_for_video_description(scenes_captions: List[str], srt_context: str) -> str:
     """
     Creates a prompt for generating a comprehensive description of a video based on key frame descriptions and subtitles.
@@ -129,11 +123,11 @@ def create_prompt_for_video_description(scenes_captions: List[str], srt_context:
     :returns: The prompt for generating a comprehensive description of the video.
 
     """
+
     prompt = (
         "You are a highly intelligent AI with the ability to generate rich and comprehensive descriptions of videos. "
         "Below are detailed captions of key frames from various scenes. Your task is to synthesize these into a cohesive and vivid description of the entire video:\n"
     )
-
     subtitles = parse_srt(srt_context)
     if subtitles:
         subtitle_context = "\n".join([f"{i}: {subtitle}" for i, subtitle in enumerate(subtitles, start=1)])
@@ -154,7 +148,6 @@ def create_prompt_for_video_description(scenes_captions: List[str], srt_context:
     )
     return prompt
 
-
 def create_lom_prompts_for_video_with_scenes_iterate(scenes_captions: List[str]) -> List[str]:
 
     """
@@ -166,7 +159,6 @@ def create_lom_prompts_for_video_with_scenes_iterate(scenes_captions: List[str])
     :returns: A dictionary containing the LOM attributes as keys and the corresponding prompts as values.
     
     """
-  
     # LOM attributes with their descriptions    
     lom_attributes = {
         "Learning Resource Type": "Provide the type of learning resource (e.g., lecture, tutorial, demonstration).",
@@ -178,9 +170,7 @@ def create_lom_prompts_for_video_with_scenes_iterate(scenes_captions: List[str])
         "Educational Level": "Specify the education level targeted by the video (e.g., undergraduate, professional development).",
         "Target Audience Age": "Provide the average age of the target audience for the video (e.g., 25 years old, mid-30s)."
     }
-    
     prompts = {}
-
     # Iterate over each attribute and generate the prompt
     for attribute, description in lom_attributes.items():
         prompt = (
@@ -192,9 +182,7 @@ def create_lom_prompts_for_video_with_scenes_iterate(scenes_captions: List[str])
             prompt += f"\nScene:{scene_number} Caption: {scene_caption}:\n"
         prompt+= "Use maximum 5 words in your output\n\n"
         prompt += f"{attribute}:"   
-        prompts[attribute] = prompt 
-      
-        
+        prompts[attribute] = prompt  
     return prompts
 
 def parse_srt(srt_content: str)-> List[str]:
@@ -307,10 +295,7 @@ def create_key_concept_for_scene_with_audio_of_scene(model:any,tokenizer:any, sr
         save_data_to_csv(output_path, [{"Source Filename": source_filename, "KEY-CONCEPTS": caption}], ['Source Filename', 'KEY-CONCEPTS'])
     return  output_path  
 
-
-
 def create_video_caption(model :any,tokenizer:any, srt_subtitles:str,input_path:str)-> str:
-    
     """
     Generates captions for the video using keyframes and subtitles
 
@@ -344,8 +329,6 @@ def create_lom_caption_with_just_scenes_List(model,tokenizer, subtitles,input_pa
 
     :rtype: dict
     :returns: A dictionary containing the LOM metadata attributes and their corresponding values.
-
-
     """
     scene_dict=get_scene_caption_from_csv(input_path, "Caption")
     prompts=create_lom_prompts_for_video_with_scenes_iterate(scene_dict)
@@ -359,8 +342,5 @@ def create_lom_caption_with_just_scenes_List(model,tokenizer, subtitles,input_pa
         caption = decoded.replace('\n', ' ').replace('\r', ' ')
         captions[attribute] = caption
     return captions
-
-
-
 
     

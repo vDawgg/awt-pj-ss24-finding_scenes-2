@@ -18,9 +18,9 @@ if __name__ == '__main__':
     input_string="https://www.youtube.com/watch?v=q0zmfNx7OM4"
     downloader = YouTubeVideo(input_string)
 
-    subtitles = downloader.download_subtitles()
-    path =downloader.download_video()
-    scene_csv = get_scenes(path)
+    subtitles= downloader.download_subtitles()
+    path=downloader.download_video()
+    scene_csv= get_scenes(path)
 
     process_all_videos_in_csv(scene_csv, "./videos/keyframes", no_of_frames_to_return=3)
     create_keyframes_csv("./videos/keyframes", scene_csv)
@@ -32,6 +32,7 @@ if __name__ == '__main__':
         bnb_4bit_use_double_quant=True,
         bnb_4bit_compute_dtype=torch.float16
     )
+
     model = AutoModelForVision2Seq.from_pretrained(
         "HuggingFaceM4/idefics2-8b",
         torch_dtype=torch.float16,
@@ -56,7 +57,6 @@ if __name__ == '__main__':
     scene_objects_with_extraction_data=get_metadata_from_scene_file(path_to_scene_csv=scene_csv)
 
     gc.collect()
-    model=None
     torch.cuda.empty_cache()
     
     model_id = "mistralai/Mistral-7B-Instruct-v0.3"
@@ -66,10 +66,10 @@ if __name__ == '__main__':
         bnb_4bit_compute_dtype=torch.float16,
         bnb_4bit_use_double_quant=True)
 
-    model = AutoModelForCausalLM.from_pretrained(model_id,quantization_config=quantization_config,attn_implementation="flash_attention_2", torch_dtype=torch.float16,)
+    model= AutoModelForCausalLM.from_pretrained(model_id,quantization_config=quantization_config,attn_implementation="flash_attention_2", torch_dtype=torch.float16,)
     tokenizer=AutoTokenizer.from_pretrained(model_id)
 
-    scene_objects_with_llm_data=get_metadata_from_keyframe_file( path_to_keyframes_csv=output_csv ,scene_objects= scene_objects_with_extraction_data,tasks=tasks)
+    scene_objects_with_llm_data=get_metadata_from_keyframe_file(path_to_keyframes_csv=output_csv ,scene_objects= scene_objects_with_extraction_data,tasks=tasks)
     create_scene_caption_with_audio_of_scene(model,tokenizer,subtitles, "./videos/keyframes/extracted_keyframes.csv","./videos/keyframes/llm_captions.csv",scene_csv)
     scene_objects_with_llm_data=set_new_content_for_metadata_attribute_for_scene_objects(path_to_keyframes_csv="./videos/keyframes/llm_captions.csv" ,scene_objects= scene_objects_with_extraction_data, attribute="Caption")
     create_key_concept_for_scene_with_audio_of_scene(model,tokenizer,subtitles, "./videos/keyframes/extracted_keyframes.csv","./videos/keyframes/llm_key_concepts.csv",scene_csv)

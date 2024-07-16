@@ -2,7 +2,6 @@ import pysrt
 import unicodedata
 import pandas as pd
 from typing import Union
-from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip
 
 def time_to_seconds(time_object: pysrt.SubRipItem)-> int:
     """ 
@@ -25,62 +24,6 @@ def time_to_milliseconds(time_object: pysrt.SubRipItem) -> int:
     """
     return (time_object.hours * 3600 * 1000 + time_object.minutes * 60 * 1000 + time_object.seconds * 1000 + time_object.milliseconds)
 
-def create_video_with_subtitles(subtitles_srt: str,path: str,fontsize:int=24, font: str='Arial', color: str='yellow', debug :bool = False, bg_color:str="black")-> str:
-    """
-    This function takes a SRT subtitles string, a path to a video file, and optional parameters for subtitle appearance. 
-    It overlays the subtitles onto the video and returns the path of the resulting video file.
-
-    :param str subtitles_srt: A string containing the subtitles in SubRip (SRT) format.
-    :param str path: The file path of the video file to which subtitles need to be added.
-    :param str output_path: (optional) The directory path to save the output video file. 
-    
-    :param int fontsize: (optional) The font size of the subtitles. Default is 24.
-    :param str font: (optional) The font family of the subtitles. Default is 'Arial'.
-    :param str color: (optional) The color of the subtitles. Default is 'yellow'.
-    :param bool debug: (optional) A flag indicating whether to enable debug mode. Default is False.
-
-    :rtype: str
-    :returns: The path of the output video file.
-    """
-    # Parse subtitles from SRT string
-    subtitles=pysrt.from_string(subtitles_srt)
-    video = VideoFileClip(path)     
-    begin,_= path.split(".mp4")
-
-    output_video_path = begin+'_subtitled'+".mp4"
-
-    # Get video size
-    video_size=video.size
-
-    # List to store subtitle clips
-    subtitle_clips = []
-
-    # Iterate over subtitles and add them to the video
-    for subtitle in subtitles:
-        start_time = time_to_seconds(subtitle.start)
-        end_time = time_to_seconds(subtitle.end)
-        duration = end_time - start_time
-
-        video_width, video_height = video_size
-        
-        # Create TextClip for subtitle
-        text_clip = TextClip(subtitle.text, fontsize=fontsize, font=font, color=color, bg_color = bg_color,size=(video_width*3/4, None), method='caption').set_start(start_time).set_duration(duration)
-
-        # Calculate position of subtitle
-        x_position_of_subtitle = 'center'
-        y_position_of_subtitle = video_height* 4/ 5 
-        text_position = (x_position_of_subtitle, y_position_of_subtitle )
-        
-        # Set position of subtitle clip
-        subtitle_clips.append(text_clip.set_position(text_position))
-    
-    # Create final video with subtitles
-    final_video = CompositeVideoClip([video] + subtitle_clips)
-
-    # Write output video file
-    final_video.write_videofile(output_video_path)
-
-    return output_video_path
 
 def search_subtitle(srt_string: str, timestamp_seconds: int)-> Union[str, None]:
     """Search for a subtitle by timestamp in seconds in a SRT string.

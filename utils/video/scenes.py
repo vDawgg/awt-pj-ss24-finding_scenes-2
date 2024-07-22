@@ -1,4 +1,4 @@
-from scenedetect import (AdaptiveDetector, split_video_ffmpeg, open_video)
+from scenedetect import (AdaptiveDetector, split_video_ffmpeg, open_video, detect)
 from scenedetect.scene_manager import SceneManager, write_scene_list
 import os
 from pathlib import Path
@@ -15,20 +15,23 @@ def get_scenes(video_path: str) -> str:
     :return: directory the scenes are written to
     """
     print("Starting scene extraction")
-    video = open_video(video_path)
-    scene_manager = SceneManager()
-    scene_manager.add_detector(AdaptiveDetector())
-    scene_manager.detect_scenes(video, show_progress=True)
-    scene_list = scene_manager.get_scene_list()
+
+    scene_list = detect(video_path, AdaptiveDetector(min_scene_len=200, min_content_val=35))
+
+    if len(scene_list) < 5:
+        scene_list = detect(video_path, AdaptiveDetector())
+
+    print(f'Detected {len(scene_list)} scenes')
 
     # Create scene dir
+    video = open_video(video_path)
     scene_dir = os.path.join(VIDEO_DIR, f'{video.name}_scenes')
     Path(scene_dir).mkdir(exist_ok=True)
 
     # Split video into scenes and write to scene_dir
     split_video_ffmpeg(video_path, scene_list, Path(scene_dir), show_progress=True)
     scene_file_list = sorted([file for file in os.listdir(scene_dir) if file.endswith('.mp4')])
-    
+
     # Create scene_list.csv, which contains the scene start time, end time, duration and file_name
     write_scene_list(open(os.path.join(scene_dir, 'scene_list.csv'), 'w'), scene_list, False)
 

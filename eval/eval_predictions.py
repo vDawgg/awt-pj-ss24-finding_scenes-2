@@ -1,3 +1,4 @@
+import difflib
 import json
 import os
 
@@ -10,19 +11,20 @@ def make_json_from_csvs():
         "images": [],
         "annotations": [],
     }
+    counter = 0
+    ds_ids = []
     for csv in os.listdir('./dataset/test'):
         print(csv)
-        print("hallo: ", os.path.join('./dataset', 'test', csv))
         df = pd.read_csv(os.path.join('./dataset', 'test', csv))
 
         img_ids = df['Source Filename'].tolist()
+        ds_ids.extend(img_ids)
         for id in img_ids:
             if {"id": id} not in ds["images"]:
                 ds['images'].append({
                     "id": id,
                 })
 
-        counter = 0
         captions = df['CAPTION'].tolist()
         for id, cap in zip(img_ids, captions):
             ds['annotations'].append({
@@ -35,10 +37,12 @@ def make_json_from_csvs():
     json.dump(ds, open('./dataset/ds.json', 'w'))
 
     preds = []
+    pred_ids = []
     for csv in os.listdir('./dataset/pred'):
         df = pd.read_csv(os.path.join('./dataset', 'pred', csv))
 
         img_ids = df['Source Filename'].tolist()
+        pred_ids.extend(img_ids)
         captions = df['CAPTION'].tolist()
 
         for id, cap in zip(img_ids, captions):
@@ -48,6 +52,8 @@ def make_json_from_csvs():
             })
 
     json.dump(preds, open('./dataset/pred.json', 'w'))
+
+    print(set(pred_ids).difference(set(ds_ids)))
 
 def eval_predictions():
     annotations = './dataset/ds.json'

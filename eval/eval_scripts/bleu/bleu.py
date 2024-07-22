@@ -19,6 +19,7 @@ class Bleu:
         self.ref_for_image = {}
 
     def compute_score(self, gts, res, verbose=1):
+        print(set(gts.keys()).difference(set(res.keys())))
 
         assert(gts.keys() == res.keys())
         imgIds = gts.keys()

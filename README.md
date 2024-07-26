@@ -95,9 +95,11 @@ The models are downloaded from [huggingface](https://huggingface.co/) when runni
 ## Running
 
 We offer multiple ways to run the pipeline depending on what interaction level might be needed.
+### Colab
 
 If no GPUs are available to you we offer a notebook, which you can use to run the pipeline step by step in [google colab](https://colab.research.google.com/github/vDawgg/awt-pj-ss24-finding_scenes-2/blob/main/colab_pipeline.ipynb) and get a better understanding of the different steps needed to arrive at the metadata for a video.
-
+### Local as script
 We also offer a [script](./main.py) which you can run locally. To do this, run ```python main.py <YOUR_YOUTUBE_LINK>```.
 
+### Local with FastApi
 Lastly for the least interaction with the actual code you can start up the demo server by running ```python server.py``` and access the front-end under [localhost:8000](http://localhost:8000).

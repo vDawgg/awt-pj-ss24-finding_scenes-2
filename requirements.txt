@@ -57,3 +57,4 @@ nltk
 flash-attn
 sentencepiece
 protobuf
+fastapi[all]

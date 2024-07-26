@@ -90,7 +90,7 @@ To install the non python dependencies of the project run the following, dependi
 
 ### Models
 
-The models are downloaded from [huggingface](https://huggingface.co/) when running the program for the first time. To download Mistral-7B-Instruct-v0.3 you need to first create a HF account and ask for access on the [model page](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.3). After access has been granted, create an access token with write permissions and place it into the [constants file](./utils/constants.py). Now all models shouldd be downloaded without any problems. 
+The models are downloaded from [huggingface](https://huggingface.co/) when running the program for the first time. To download Mistral-7B-Instruct-v0.3 you need to first create a HF account and ask for access on the [model page](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.3). After access has been granted, create an access token with write permissions and place it into the [constants file](./utils/constants.py). Now all models should be downloaded without any problems. 
 
 ## Running
 

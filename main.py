@@ -3,7 +3,7 @@ import sys
 from xmlrpc.client import Error
 from pathlib import Path
 
-from utils.constants import VIDEO_DIR
+from utils.constants import VIDEO_DIR, HF_TOKEN
 from utils.video.youtube import YouTubeVideo
 from utils.objects.metadata_object import MetaDataObject
 from utils.video.scenes import get_scenes
@@ -27,9 +27,9 @@ if __name__ == '__main__':
     downloader = YouTubeVideo(input_string)
     title = downloader.get_youtube_video_title()
 
-    if Path(f'{VIDEO_DIR}/{title}').is_file():
+    if Path(f'{VIDEO_DIR}/{title}.json').is_file():
         print(f"Metadata for {title} has already been generated")
-        pass
+        sys.exit()
 
     subtitles = downloader.download_subtitles()
     path = downloader.download_video()
@@ -79,19 +79,53 @@ if __name__ == '__main__':
         bnb_4bit_compute_dtype=torch.float16,
         bnb_4bit_use_double_quant=True)
 
-    model= AutoModelForCausalLM.from_pretrained(model_id,quantization_config=quantization_config,attn_implementation="flash_attention_2", torch_dtype=torch.float16,)
-    tokenizer=AutoTokenizer.from_pretrained(model_id)
+    model = AutoModelForCausalLM.from_pretrained(
+                            model_id,
+                            quantization_config=quantization_config,
+                            attn_implementation="flash_attention_2",
+                            torch_dtype=torch.float16,
+                            token=HF_TOKEN
+                        )
+    tokenizer = AutoTokenizer.from_pretrained(model_id, token=HF_TOKEN)
 
-    scene_objects_with_llm_data=get_metadata_from_keyframe_file(path_to_keyframes_csv=output_csv ,scene_objects= scene_objects_with_extraction_data,tasks=tasks)
-    create_scene_caption_with_audio_of_scene(model,tokenizer,subtitles, "./videos/keyframes/extracted_keyframes.csv","./videos/keyframes/llm_captions.csv",scene_csv)
-    scene_objects_with_llm_data=set_new_content_for_metadata_attribute_for_scene_objects(path_to_keyframes_csv="./videos/keyframes/llm_captions.csv" ,scene_objects= scene_objects_with_extraction_data, attribute="Caption")
-    create_key_concept_for_scene_with_audio_of_scene(model,tokenizer,subtitles, "./videos/keyframes/extracted_keyframes.csv","./videos/keyframes/llm_key_concepts.csv",scene_csv)
-    scene_objects_with_llm_data=set_new_content_for_metadata_attribute_for_scene_objects(path_to_keyframes_csv="./videos/keyframes/llm_key_concepts.csv" ,scene_objects= scene_objects_with_extraction_data, attribute="KEY-CONCEPTS")
-    description=create_video_caption(model,tokenizer, subtitles,"./videos/keyframes/llm_captions.csv")
-    video_json=create_lom_caption_with_just_scenes_List(model,tokenizer, subtitles,"./videos/keyframes/llm_captions.csv")
+    scene_objects_with_llm_data = get_metadata_from_keyframe_file(
+                                        path_to_keyframes_csv=output_csv,
+                                        scene_objects=scene_objects_with_extraction_data,
+                                        tasks=tasks
+                                    )
+    create_scene_caption_with_audio_of_scene(
+        model,
+        tokenizer,
+        subtitles,
+        "./videos/keyframes/extracted_keyframes.csv",
+        "./videos/keyframes/llm_captions.csv",
+        scene_csv
+    )
 
-    metaDataObject=MetaDataObject(input_string, downloader.yt, scene_objects_with_llm_data)
-    metaDataObject.llm_description=description
+    scene_objects_with_llm_data = set_new_content_for_metadata_attribute_for_scene_objects(
+                                        path_to_keyframes_csv="./videos/keyframes/llm_captions.csv",
+                                        scene_objects= scene_objects_with_extraction_data,
+                                        attribute="Caption"
+                                    )
+    create_key_concept_for_scene_with_audio_of_scene(
+        model,
+        tokenizer,
+        subtitles,
+        "./videos/keyframes/extracted_keyframes.csv",
+        "./videos/keyframes/llm_key_concepts.csv",
+        scene_csv
+    )
+
+    scene_objects_with_llm_data = set_new_content_for_metadata_attribute_for_scene_objects(
+                                        path_to_keyframes_csv="./videos/keyframes/llm_key_concepts.csv",
+                                        scene_objects= scene_objects_with_extraction_data,
+                                        attribute="KEY-CONCEPTS"
+                                    )
+    description = create_video_caption(model,tokenizer, subtitles,"./videos/keyframes/llm_captions.csv")
+    video_json = create_lom_caption_with_just_scenes_List(model,tokenizer, subtitles,"./videos/keyframes/llm_captions.csv")
+
+    metaDataObject = MetaDataObject(input_string, downloader.yt, scene_objects_with_llm_data)
+    metaDataObject.llm_description = description
 
     for key, value in video_json.items():
         setattr(metaDataObject, key.lower().replace(" ", "_"), value)

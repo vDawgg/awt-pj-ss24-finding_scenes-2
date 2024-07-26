@@ -27,7 +27,7 @@ if __name__ == '__main__':
     downloader = YouTubeVideo(input_string)
     title = downloader.get_youtube_video_title()
 
-    if Path(VIDEO_DIR / title).is_file():
+    if Path(f'{VIDEO_DIR}/{title}').is_file():
         print(f"Metadata for {title} has already been generated")
         pass
 

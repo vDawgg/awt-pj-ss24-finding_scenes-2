@@ -2,7 +2,7 @@ from utils.constants import VIDEO_DIR
 
 import os
 import yt_dlp
-from pytube import YouTube
+from pytubefix import YouTube
 from typing import List, Union
 
 class YouTubeVideo:
@@ -53,7 +53,7 @@ class YouTubeVideo:
         """
         try:
             yt = self.yt
-            yt.bypass_age_gate()
+            #yt.bypass_age_gate()
             priority_languages = ['en', 'a.en', 'de', 'a.de']
             caption_key = self.get_first_existing_key(priority_languages, yt.captions.keys())
 
@@ -69,3 +69,13 @@ class YouTubeVideo:
         except Exception as e:
             print(f"Error fetching subtitles: {e}")
             return None
+
+    def get_youtube_video_title(self) -> str:
+        try:
+            allowed_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 "
+            title = ''.join(e for e in self.yt.title if e in allowed_chars)
+
+            return title
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return "Error retrieving video title"

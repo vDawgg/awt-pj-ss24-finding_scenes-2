@@ -62,32 +62,42 @@ First, the user provides a YouTube link, which is received by FastAPI. FastAPI f
 ## Setup
 
 
-To install the project's dependencies, run the following command in your terminal:
+To install the project's python libraries, run the following command in your terminal:
 
 ```bash
 pip install -r requirements.txt
 ```
 
+Additionally, to install flash attention run:
+
+```bash
+pip install flash-attn --no-build-isolation
+```
+
 As with most python projects we recommend setting up a [virtual environment](https://docs.python.org/3/library/venv.html).
 
-## Dependencies
+### Dependencies
 
 To install the non python dependencies of the project run the following, depending on your systen:
 
-### Arch
+#### Arch
 
 `sudo pacman -S ffmpeg`
 
-### Ubuntu
+#### Ubuntu
 
 `sudo apt-get install ffmpeg`
 
+### Models
+
+The models are downloaded from [huggingface](https://huggingface.co/) when running the program for the first time. To download Mistral-7B-Instruct-v0.3 you need to first create a HF account and ask for access on the [model page](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.3). After access has been granted, create an access token with write permissions and place it into the [constants file](./utils/constants.py). Now all models shouldd be downloaded without any problems. 
 
 ## Running
 
-With `python server.py`
+We offer multiple ways to run the pipeline depending on what interaction level might be needed.
 
+If no GPUs are available to you we offer a notebook, which you can use to run the pipeline step by step in [google colab](https://colab.research.google.com/github/vDawgg/awt-pj-ss24-finding_scenes-2/blob/main/colab_pipeline.ipynb) and get a better understanding of the different steps needed to arrive at the metadata for a video.
 
+We also offer a [script](./main.py) which you can run locally. To do this, run ```python main.py <YOUR_YOUTUBE_LINK>```.
 
-
-##
+Lastly for the least interaction with the actual code you can start up the demo server by running ```python server.py``` and access the front-end under [localhost:8000](http://localhost:8000).

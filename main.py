@@ -1,10 +1,11 @@
 import gc
-import torch
+import sys
+from xmlrpc.client import Error
+from pathlib import Path
 
+from utils.constants import VIDEO_DIR
 from utils.video.youtube import YouTubeVideo
 from utils.objects.metadata_object import MetaDataObject
-from transformers import AutoProcessor, AutoModelForVision2Seq, BitsAndBytesConfig, AutoModelForCausalLM, AutoTokenizer
-
 from utils.video.scenes import get_scenes
 from utils.video.subtitles import save_subtitle_in_csv
 from utils.video.create_keyframes_csv import create_keyframes_csv
@@ -13,14 +14,26 @@ from utils.video.keyframe_extraction import process_all_videos_in_csv
 from utils.metadata.metadata_function import get_metadata_from_scene_file, get_metadata_from_keyframe_file, set_new_content_for_metadata_attribute_for_scene_objects
 from utils.llm.mistral_helper import create_key_concept_for_scene_with_audio_of_scene, create_lom_caption_with_just_scenes_List, create_scene_caption_with_audio_of_scene, create_video_caption
 
+import torch
+from transformers import AutoProcessor, AutoModelForVision2Seq, BitsAndBytesConfig, AutoModelForCausalLM, AutoTokenizer
+
+
 if __name__ == '__main__':
 
-    input_string="https://www.youtube.com/watch?v=q0zmfNx7OM4"
-    downloader = YouTubeVideo(input_string)
+    if len(sys.argv) < 2:
+        raise Error("Please enter a youtube link to run this script")
+    input_string = sys.argv[1]
 
-    subtitles= downloader.download_subtitles()
-    path=downloader.download_video()
-    scene_csv= get_scenes(path)
+    downloader = YouTubeVideo(input_string)
+    title = downloader.get_youtube_video_title()
+
+    if Path(VIDEO_DIR / title).is_file():
+        print(f"Metadata for {title} has already been generated")
+        pass
+
+    subtitles = downloader.download_subtitles()
+    path = downloader.download_video()
+    scene_csv = get_scenes(path)
 
     process_all_videos_in_csv(scene_csv, "./videos/keyframes", no_of_frames_to_return=3)
     create_keyframes_csv("./videos/keyframes", scene_csv)
@@ -83,7 +96,7 @@ if __name__ == '__main__':
     for key, value in video_json.items():
         setattr(metaDataObject, key.lower().replace(" ", "_"), value)
 
-    with open('metadata_idefics.json', 'w') as outfile:
+    with open(f'{VIDEO_DIR}/{downloader.yt.title}.json', 'w') as outfile:
         outfile.write(metaDataObject.to_json())
         print(metaDataObject.to_json())
 

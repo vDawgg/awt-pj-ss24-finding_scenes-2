@@ -1,3 +1,6 @@
+from Katna.config import Video
+from nltk.corpus.reader import titles
+
 from utils.constants import VIDEO_DIR
 
 import gc
@@ -6,7 +9,7 @@ import torch
 import subprocess
 import pandas as pd
 from pathlib import Path
-from pytube import YouTube
+from utils.video.youtube import YouTubeVideo
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from utils.video.youtube import YouTubeVideo
@@ -23,19 +26,6 @@ from utils.llm.mistral_helper import create_key_concept_for_scene_with_audio_of_
 
 
 app = FastAPI()
-
-
-def get_youtube_video_title(url: str) -> str:
-    try:
-        video = YouTube(url)
-        title = video.title
-        allowed_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 "
-        title = ''.join(e for e in title if e in allowed_chars)
-
-        return title
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return "Error retrieving video title"
 
     
 def file_exists(file_path: str) -> bool:
@@ -60,7 +50,7 @@ def download_video(url: str):
 @app.get("/scenes")
 def scenes(url: str):
     try:
-        title = get_youtube_video_title(url)
+        title = YouTubeVideo(url).get_youtube_video_title()
         print(title)
         path = str(Path(VIDEO_DIR) / f"{title}.mp4")
         print(path)
@@ -74,7 +64,7 @@ def scenes(url: str):
 @app.post("/keyframes")
 def extract_keyframes(url: str):
     try:
-        title = get_youtube_video_title(url)
+        title = YouTubeVideo(url).get_youtube_video_title()
         scene_csv_path = Path(VIDEO_DIR) / f"{title}_scenes" / 'scene_list.csv'
 
         command = ["python", "utils/video/keyframe_extraction.py", scene_csv_path, "3"]
@@ -171,7 +161,7 @@ def generate_metadata(url: str):
             "VIDEO_TYPE": "What kind of video is this, is it a tutorial, a lecture, etc",
         }
 
-        title = get_youtube_video_title(url)
+        title = YouTubeVideo(url).get_youtube_video_title()
         output_csv = Path(VIDEO_DIR) / "keyframes" / 'extracted_keyframes.csv'
         scene_csv = Path(VIDEO_DIR) / f"{title}_scenes" / 'scene_list.csv'
 
@@ -203,7 +193,7 @@ def generate_metadata(url: str):
         for key, value in video_json.items():
           setattr(metaDataObject, key.lower().replace(" ", "_"), value)
 
-        with open('metadata_idefics.json', 'w') as outfile:
+        with open(f'{VIDEO_DIR}/{title}.json', 'w') as outfile:
             outfile.write(metaDataObject.to_json())
             print(metaDataObject.to_json())
 
@@ -214,11 +204,11 @@ def generate_metadata(url: str):
 
 @app.get("/pipeline")
 def run_pipeline(url: str):
-    title = get_youtube_video_title(url)
+    title = YouTubeVideo(url).get_youtube_video_title()
 
     if not file_exists(str(Path(VIDEO_DIR) / f"{title}.mp4")):
         keyframes_csv = (Path(VIDEO_DIR) / "keyframes" / 'extracted_keyframes.csv')
-        metadata_json = Path("metadata_idefics.json")
+        metadata_json = Path(Path(VIDEO_DIR) / f"{title}.json")
         
         keyframes_csv.unlink(missing_ok=True)
         metadata_json.unlink(missing_ok=True)
@@ -226,7 +216,7 @@ def run_pipeline(url: str):
 
     if not file_exists(str(Path(VIDEO_DIR) / f"{title}_scenes" / 'scene_list.csv')):
         keyframes_csv = (Path(VIDEO_DIR) / "keyframes" / 'extracted_keyframes.csv')
-        metadata_json = Path("metadata_idefics.json")
+        metadata_json = Path(Path(VIDEO_DIR) / f"{title}.json")
 
         keyframes_csv.unlink(missing_ok=True)
         metadata_json.unlink(missing_ok=True)
@@ -234,11 +224,11 @@ def run_pipeline(url: str):
         extract_keyframes(url)
         get_caption(url)
 
-    if not file_exists(str('metadata_idefics.json')):
+    if not file_exists(str(f'{VIDEO_DIR}/{title}.json')):
         get_frame_caption()
         generate_metadata(url)
 
-    with open('metadata_idefics.json', 'r') as file:
+    with open(f'{VIDEO_DIR}/{title}.json', 'r') as file:
         metadata = json.load(file)
 
     return {

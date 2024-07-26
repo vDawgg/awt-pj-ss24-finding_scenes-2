@@ -1,7 +1,9 @@
 import json
 from typing import List
-from pytube import YouTube
+from pytubefix import YouTube
 from utils.objects.scene_object import SceneObject
+
+
 class MetaDataObject:
     """A class to represent the metadata of a video.
     

@@ -36,7 +36,7 @@ def file_exists(file_path: str) -> bool:
 
 @app.get("/")
 async def root():
-    return HTMLResponse(content=open("index.html").read(), status_code=200)
+    return HTMLResponse(content=open("utils/assets/index.html").read(), status_code=200)
 
 
 @app.post("/video")

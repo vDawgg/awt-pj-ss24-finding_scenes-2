@@ -21,7 +21,7 @@ def get_column_values(csv_file: str, column_name: str) -> List[str]:
         return None
 
 
-def get_filepaths_from_csv(csv_file: str, filename_column: str, directory: str = "videos/keyframes") -> List[str]:
+def get_filepaths_from_csv(csv_file: str, filename_column: str, directory: str) -> List[str]:
     """ Get the full filepaths of the images from the CSV file.
     :param str csv_file: The path to the CSV file.
     :param str filename_column: The name of the column containing the filenames.
@@ -33,7 +33,7 @@ def get_filepaths_from_csv(csv_file: str, filename_column: str, directory: str =
 
     csv_filepath = os.path.join(directory, csv_file)
     filenames = get_column_values(csv_filepath, filename_column)
-    full_filepaths = [f"{os.path.join(directory, ''.join(filename.split('_')[:-1]), filename)}" for filename in
+    full_filepaths = [f"{os.path.join(directory, filename)}" for filename in
                       filenames]
     return full_filepaths
 

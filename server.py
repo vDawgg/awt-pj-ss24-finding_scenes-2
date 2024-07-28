@@ -16,7 +16,7 @@ from utils.video.youtube import YouTubeVideo
 from utils.objects.metadata_object import MetaDataObject
 from transformers import AutoProcessor, AutoModelForVision2Seq, BitsAndBytesConfig, AutoModelForCausalLM, AutoTokenizer
 
-
+from utils.constants import VIDEO_DIR, HF_TOKEN
 from utils.video.scenes import get_scenes
 from utils.video.subtitles import save_subtitle_in_csv
 from utils.captioning.caption_keyframes import caption_images_idefics_2
@@ -31,13 +31,9 @@ app = FastAPI()
 def file_exists(file_path: str) -> bool:
     return Path(file_path).exists()
 
-
-# app.mount("/static", StaticFiles(directory="static"), name="static")
-
 @app.get("/")
 async def root():
     return HTMLResponse(content=open("utils/assets/index.html").read(), status_code=200)
-
 
 @app.post("/video")
 def download_video(url: str):
@@ -60,21 +56,19 @@ def scenes(url: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.post("/keyframes")
 def extract_keyframes(url: str):
     try:
         title = YouTubeVideo(url).get_youtube_video_title()
-        scene_csv_path = Path(VIDEO_DIR) / f"{title}_scenes" / 'scene_list.csv'
 
-        command = ["python", "utils/video/keyframe_extraction.py", scene_csv_path, "3"]
+        command = ["python", "utils/keyframe/keyframe_extraction.py", title, "1"]
         result = subprocess.run(command, capture_output=True, text=True)
         if result.returncode == 0:
             print("Output:", result.stdout)
         else:
             print("Error:", result.stderr)
         
-        keyframes_csv = Path(VIDEO_DIR) / "keyframes" / 'extracted_keyframes.csv'
+        keyframes_csv = Path(VIDEO_DIR) / f"{title}_keyframes" / f"{title}_keyframes.csv"
         keyframes_data = pd.read_csv(keyframes_csv)
         
         return {
@@ -84,7 +78,6 @@ def extract_keyframes(url: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.post("/caption")
 def get_caption(url: str):
     try:
@@ -93,23 +86,25 @@ def get_caption(url: str):
         csv_path = Path(VIDEO_DIR) / "keyframes" / 'extracted_keyframes.csv'
         save_subtitle_in_csv(subtitles, csv_path)
         keyframes_csv = Path(VIDEO_DIR) / "keyframes" / 'extracted_keyframes.csv'
-        keyframes_data = pd.read_csv(keyframes_csv)
         
         return {
             "message": "Subtitles extracted successfully",
-            # "keyframes_data": keyframes_data.to_dict(orient='records')
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/frame_caption")
-def get_frame_caption():
+def get_frame_caption(url: str):
 
     gc.collect()
     torch.cuda.empty_cache()
 
+
+
     try:
+
+        title = YouTubeVideo(url).get_youtube_video_title()
         quantization_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_quant_type="nf4",
@@ -124,7 +119,7 @@ def get_frame_caption():
         )
         processor = AutoProcessor.from_pretrained("HuggingFaceM4/idefics2-8b")
 
-        directory = "./videos/keyframes"
+        directory = Path(VIDEO_DIR) / f"{title}_keyframes"
         tasks = {
             "CAPTION": "Caption the scene. Describe the contents and likely topics with as much detail as possible.",
             "KEY-CONCEPTS": "What are the key-concepts outlined in this scene?",
@@ -162,8 +157,10 @@ def generate_metadata(url: str):
         }
 
         title = YouTubeVideo(url).get_youtube_video_title()
-        output_csv = Path(VIDEO_DIR) / "keyframes" / 'extracted_keyframes.csv'
+        keyframes_csv = Path(VIDEO_DIR) / f"{title}_keyframes" / "{title}_keyframes.csv"
         scene_csv = Path(VIDEO_DIR) / f"{title}_scenes" / 'scene_list.csv'
+        llm_caption_csv = Path(VIDEO_DIR) / f"{title}_keyframes" / "llm_captions.csv"
+        llm_key_concepts_csv = Path(VIDEO_DIR) / f"{title}_keyframes" / "llm_key_concepts.csv"
 
         
         scene_objects_with_extraction_data=get_metadata_from_scene_file(path_to_scene_csv=scene_csv)
@@ -175,16 +172,23 @@ def generate_metadata(url: str):
             bnb_4bit_compute_dtype=torch.float16,
             bnb_4bit_use_double_quant=True)
 
-        model = AutoModelForCausalLM.from_pretrained(model_id,quantization_config=quantization_config,attn_implementation="flash_attention_2", torch_dtype=torch.float16,)
-        tokenizer=AutoTokenizer.from_pretrained(model_id)
+        model = AutoModelForCausalLM.from_pretrained(
+                                model_id,
+                                quantization_config=quantization_config,
+                                attn_implementation="flash_attention_2",
+                                torch_dtype=torch.float16,
+                                token=HF_TOKEN
+                            )
 
-        scene_objects_with_llm_data=get_metadata_from_keyframe_file( path_to_keyframes_csv=output_csv ,scene_objects= scene_objects_with_extraction_data,tasks=tasks)
-        create_scene_caption_with_audio_of_scene(model,tokenizer,subtitles, "./videos/keyframes/extracted_keyframes.csv","./videos/keyframes/llm_captions.csv",scene_csv)
-        scene_objects_with_llm_data=set_new_content_for_metadata_attribute_for_scene_objects(path_to_keyframes_csv="./videos/keyframes/llm_captions.csv" ,scene_objects= scene_objects_with_extraction_data, attribute="Caption")
-        create_key_concept_for_scene_with_audio_of_scene(model,tokenizer,subtitles, "./videos/keyframes/extracted_keyframes.csv","./videos/keyframes/llm_key_concepts.csv",scene_csv)
-        scene_objects_with_llm_data=set_new_content_for_metadata_attribute_for_scene_objects(path_to_keyframes_csv="./videos/keyframes/llm_key_concepts.csv" ,scene_objects= scene_objects_with_extraction_data, attribute="KEY-CONCEPTS")
-        description=create_video_caption(model,tokenizer, subtitles,"./videos/keyframes/llm_captions.csv")
-        video_json=create_lom_caption_with_just_scenes_List(model,tokenizer, subtitles,"./videos/keyframes/llm_captions.csv")
+        tokenizer = AutoTokenizer.from_pretrained(model_id, token=HF_TOKEN)
+
+        scene_objects_with_llm_data=get_metadata_from_keyframe_file( path_to_keyframes_csv=keyframes_csv ,scene_objects= scene_objects_with_extraction_data,tasks=tasks)
+        create_scene_caption_with_audio_of_scene(model,tokenizer,subtitles, keyframes_csv,llm_caption_csv,scene_csv)
+        scene_objects_with_llm_data=set_new_content_for_metadata_attribute_for_scene_objects(path_to_keyframes_csv= llm_caption_csv ,scene_objects= scene_objects_with_extraction_data, attribute="Caption")
+        create_key_concept_for_scene_with_audio_of_scene(model,tokenizer,subtitles, keyframes_csv,llm_key_concepts_csv,scene_csv)
+        scene_objects_with_llm_data=set_new_content_for_metadata_attribute_for_scene_objects(path_to_keyframes_csv=llm_key_concepts_csv, scene_objects= scene_objects_with_extraction_data, attribute="KEY-CONCEPTS")
+        description=create_video_caption(model,tokenizer, subtitles,llm_caption_csv)
+        video_json=create_lom_caption_with_just_scenes_List(model,tokenizer, subtitles,llm_caption_csv)
 
 
         metaDataObject=MetaDataObject(url, downloader.yt, scene_objects_with_llm_data)
@@ -207,7 +211,7 @@ def run_pipeline(url: str):
     title = YouTubeVideo(url).get_youtube_video_title()
 
     if not file_exists(str(Path(VIDEO_DIR) / f"{title}.mp4")):
-        keyframes_csv = (Path(VIDEO_DIR) / "keyframes" / 'extracted_keyframes.csv')
+        keyframes_csv = (Path(VIDEO_DIR) / f"{title}_keyframes" / f"{title}_keyframes.csv")
         metadata_json = Path(Path(VIDEO_DIR) / f"{title}.json")
         
         keyframes_csv.unlink(missing_ok=True)
@@ -215,7 +219,7 @@ def run_pipeline(url: str):
         download_video(url)
 
     if not file_exists(str(Path(VIDEO_DIR) / f"{title}_scenes" / 'scene_list.csv')):
-        keyframes_csv = (Path(VIDEO_DIR) / "keyframes" / 'extracted_keyframes.csv')
+        keyframes_csv = (Path(VIDEO_DIR) / f"{title}_keyframes" / f"{title}_keyframes.csv")
         metadata_json = Path(Path(VIDEO_DIR) / f"{title}.json")
 
         keyframes_csv.unlink(missing_ok=True)
@@ -225,7 +229,7 @@ def run_pipeline(url: str):
         get_caption(url)
 
     if not file_exists(str(f'{VIDEO_DIR}/{title}.json')):
-        get_frame_caption()
+        get_frame_caption(url)
         generate_metadata(url)
 
     with open(f'{VIDEO_DIR}/{title}.json', 'r') as file:

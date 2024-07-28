@@ -38,7 +38,7 @@ def get_filepaths_from_csv(csv_file: str, filename_column: str, directory: str) 
     return full_filepaths
 
 
-def caption_images_idefics_2(model: Any, processor: PreTrainedTokenizerFast, tasks, csv_file: str = "extracted_keyframes.csv",
+def caption_images_idefics_2(model: Any, processor: PreTrainedTokenizerFast, tasks, csv_file: str,
                    filename_column: str = 'Filename', directory: str = "videos/keyframes") -> str:
     """
     Caption the images using the provided model and prompt.

@@ -2,8 +2,6 @@ import os
 import sys
 import csv
 import glob
-import time
-from typing import Optional
 from pathlib import Path
 import pandas as pd
 
@@ -11,12 +9,11 @@ import pandas as pd
 from Katna.writer import KeyFrameDiskWriter
 from katna_custom.custom_writer import TimeStampDiskWriter
 from katna_custom.custom_video_extraction import CustomVideo
-# from utils.keyframe.utils import time_string_to_milliseconds, milliseconds_to_time_string
+from utils.constants import VIDEO_DIR
+# VIDEO_DIR = Path(__file__).resolve().parent.parent.parent / 'videos'
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 print(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-# from utils.constants import VIDEO_DIR
-# from constants import VIDEO_DIR
-VIDEO_DIR = Path(__file__).resolve().parent.parent.parent / 'videos'
 
 
 def time_string_to_milliseconds(time_str):
@@ -263,10 +260,6 @@ def main():
 
     video_name = sys.argv[1]
     no_of_frames_to_return = int(sys.argv[2])
-
-
-    # video_name = "Rust in 100 Seconds"
-    # no_of_frames_to_return = 1
 
     keyframe_csv_path = generate_keyframes_from_scenes(
         video_name=video_name,

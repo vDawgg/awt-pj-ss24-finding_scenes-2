@@ -79,13 +79,9 @@ As with most python projects we recommend setting up a [virtual environment](htt
 
 To install the non python dependencies of the project run the following, depending on your systen:
 
-#### Arch
-
-`sudo pacman -S ffmpeg`
-
 #### Ubuntu
 
-`sudo apt-get install ffmpeg`
+`sudo apt-get install ffmpeg imagemagick`
 
 ### Models
 

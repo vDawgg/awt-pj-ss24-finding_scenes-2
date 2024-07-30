@@ -102,7 +102,19 @@ export PYTHONPATH=$(pwd)
 ```
 
 ### Local as script
-We also offer a [script](./main.py) which you can run locally. To do this, run ```python main.py <YOUR_YOUTUBE_LINK>```.
+We offer a [script](./main.py) which you can run locally. To do this, run ```python main.py <YOUR_YOUTUBE_LINK>```.
 
 ### Local with FastApi
-Lastly for the least interaction with the actual code you can start up the demo server by running ```python server.py``` and access the front-end under [localhost:8000](http://localhost:8000).
+For the least interaction with the actual code you can start up the demo server by running ```python server.py``` and access the front-end under [localhost:8000](http://localhost:8000).
+
+## Evaluation
+
+For the evaluation of this project we created a small dataset containing manually created captions for 10 learning videos from YouTube. The datasets containing the manual and automated captions can be found under [eval](./eval).
+
+To execute the evaluation cd into the eval directory and run:
+
+```bash
+python eval_predictions.py
+```
+
+The scripts for calculating the metrics were taken from [pycocoevalcap](https://github.com/salaniz/pycocoevalcap).

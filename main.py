@@ -60,7 +60,7 @@ if __name__ == '__main__':
 
     processor = AutoProcessor.from_pretrained("HuggingFaceM4/idefics2-8b")
 
-    keyframes_dir = Path(VIDEO_DIR) / f"{title}_keyframes"
+    keyframes_dir = str(Path(VIDEO_DIR) / f"{title}_keyframes")
 
     tasks = {
         "CAPTION": "Caption the scene. Describe the contents and likely topics with as much detail as possible.",
@@ -72,7 +72,11 @@ if __name__ == '__main__':
         "VIDEO_TYPE": "What kind of video is this, is it a tutorial, a lecture, etc",
      }
 
-    output_csv = caption_images_idefics_2(model=model, processor=processor, tasks=tasks, directory=keyframes_dir)
+    output_csv = caption_images_idefics_2(model=model,
+                                          processor=processor,
+                                          tasks=tasks,
+                                          csv_file=keyframe_csv_path,
+                                          directory=keyframes_dir)
     scene_objects_with_extraction_data=get_metadata_from_scene_file(path_to_scene_csv=scene_csv)
 
     gc.collect()
@@ -109,7 +113,7 @@ if __name__ == '__main__':
     )
 
     scene_objects_with_llm_data = set_new_content_for_metadata_attribute_for_scene_objects(
-                                        path_to_keyframes_csv= Path(keyframes_dir) / "llm_captions.csv",
+                                        path_to_keyframes_csv=f"{keyframes_dir}/llm_captions.csv",
                                         scene_objects= scene_objects_with_extraction_data,
                                         attribute="Caption"
                                     )
@@ -118,17 +122,17 @@ if __name__ == '__main__':
         tokenizer,
         subtitles,
         keyframe_csv_path,
-        Path(keyframes_dir) / "llm_key_concepts.csv",
+        f"{keyframes_dir}/llm_key_concepts.csv",
         scene_csv
     )
 
     scene_objects_with_llm_data = set_new_content_for_metadata_attribute_for_scene_objects(
-                                        path_to_keyframes_csv=Path(keyframes_dir) / "llm_key_concepts.csv",
+                                        path_to_keyframes_csv=f"{keyframes_dir}/llm_key_concepts.csv",
                                         scene_objects= scene_objects_with_extraction_data,
                                         attribute="KEY-CONCEPTS"
                                     )
-    description = create_video_caption(model,tokenizer, subtitles, Path(keyframes_dir) / "llm_captions.csv")
-    video_json = create_lom_caption_with_just_scenes_List(model,tokenizer, subtitles,Path(keyframes_dir) / "llm_captions.csv")
+    description = create_video_caption(model,tokenizer, subtitles,f"{keyframes_dir}/llm_captions.csv")
+    video_json = create_lom_caption_with_just_scenes_List(model,tokenizer, subtitles, f"{keyframes_dir}/llm_captions.csv")
 
     metaDataObject = MetaDataObject(input_string, downloader.yt, scene_objects_with_llm_data)
     metaDataObject.llm_description = description

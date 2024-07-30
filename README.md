@@ -42,8 +42,7 @@ First, the user provides a YouTube link, which is received by FastAPI. FastAPI f
     "target_audience_age": "str",
     "typical_learning_time": "str",
     "scene_objects": ["SceneObject"]
-  }
-
+  },
    "SceneObject":{
     "duration": "str",
     "scene_start": "str",
@@ -95,9 +94,13 @@ The models are downloaded from [huggingface](https://huggingface.co/) when runni
 ## Running
 
 We offer multiple ways to run the pipeline depending on what interaction level might be needed.
-### Colab
 
-If no GPUs are available to you we offer a notebook, which you can use to run the pipeline step by step in [google colab](https://colab.research.google.com/github/vDawgg/awt-pj-ss24-finding_scenes-2/blob/main/colab_pipeline.ipynb) and get a better understanding of the different steps needed to arrive at the metadata for a video.
+To make sure that there aren't any complications with running the scripts below, make sure that you added this repository to your python path by running.
+
+```bash
+export PYTHONPATH=$(pwd)
+```
+
 ### Local as script
 We also offer a [script](./main.py) which you can run locally. To do this, run ```python main.py <YOUR_YOUTUBE_LINK>```.
 

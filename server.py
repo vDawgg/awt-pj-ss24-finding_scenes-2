@@ -61,7 +61,7 @@ def extract_keyframes(url: str):
     try:
         title = YouTubeVideo(url).get_youtube_video_title()
 
-        command = ["python", "utils/keyframe/keyframe_extraction.py", title, "1"]
+        command = ["python", "utils/keyframe/keyframe_extraction.py", title, "3"]
         result = subprocess.run(command, capture_output=True, text=True)
         if result.returncode == 0:
             print("Output:", result.stdout)
@@ -83,10 +83,10 @@ def get_caption(url: str):
     try:
         downloader = YouTubeVideo(url)
         subtitles = downloader.download_subtitles()
-        csv_path = Path(VIDEO_DIR) / "keyframes" / 'extracted_keyframes.csv'
+        title = downloader.get_youtube_video_title()
+        csv_path = str(Path(VIDEO_DIR) / f"{title}_keyframes" / f'{title}_keyframes.csv')
         save_subtitle_in_csv(subtitles, csv_path)
-        keyframes_csv = Path(VIDEO_DIR) / "keyframes" / 'extracted_keyframes.csv'
-        
+
         return {
             "message": "Subtitles extracted successfully",
         }
@@ -119,7 +119,8 @@ def get_frame_caption(url: str):
         )
         processor = AutoProcessor.from_pretrained("HuggingFaceM4/idefics2-8b")
 
-        directory = Path(VIDEO_DIR) / f"{title}_keyframes"
+        directory = str(Path(VIDEO_DIR) / f"{title}_keyframes")
+        csv_file = str(Path(VIDEO_DIR) / f"{title}_keyframes" / f"{title}_keyframes.csv")
         tasks = {
             "CAPTION": "Caption the scene. Describe the contents and likely topics with as much detail as possible.",
             "KEY-CONCEPTS": "What are the key-concepts outlined in this scene?",
@@ -130,7 +131,7 @@ def get_frame_caption(url: str):
             "VIDEO_TYPE": "What kind of video is this, is it a tutorial, a lecture, etc",
         }
 
-        output_csv = caption_images_idefics_2(model=model, processor=processor, tasks=tasks, directory=directory)
+        caption_images_idefics_2(model=model, processor=processor, tasks=tasks, directory=directory, csv_file=csv_file)
 
         return {"message": "Captioning completed successfully"}
     except Exception as e:
@@ -146,6 +147,8 @@ def generate_metadata(url: str):
         downloader = YouTubeVideo(url)
         subtitles = downloader.download_subtitles()
 
+        print(1)
+
         tasks = {
             "CAPTION": "Caption the scene. Describe the contents and likely topics with as much detail as possible.",
             "KEY-CONCEPTS": "What are the key-concepts outlined in this scene?",
@@ -157,13 +160,14 @@ def generate_metadata(url: str):
         }
 
         title = YouTubeVideo(url).get_youtube_video_title()
-        keyframes_csv = Path(VIDEO_DIR) / f"{title}_keyframes" / "{title}_keyframes.csv"
-        scene_csv = Path(VIDEO_DIR) / f"{title}_scenes" / 'scene_list.csv'
-        llm_caption_csv = Path(VIDEO_DIR) / f"{title}_keyframes" / "llm_captions.csv"
-        llm_key_concepts_csv = Path(VIDEO_DIR) / f"{title}_keyframes" / "llm_key_concepts.csv"
-
+        keyframes_csv = str(Path(VIDEO_DIR) / f"{title}_keyframes" / f"{title}_keyframes.csv")
+        scene_csv = str(Path(VIDEO_DIR) / f"{title}_scenes" / 'scene_list.csv')
+        llm_caption_csv = str(Path(VIDEO_DIR) / f"{title}_keyframes" / "llm_captions.csv")
+        llm_key_concepts_csv = str(Path(VIDEO_DIR) / f"{title}_keyframes" / "llm_key_concepts.csv")
         
         scene_objects_with_extraction_data=get_metadata_from_scene_file(path_to_scene_csv=scene_csv)
+
+        print(2)
         
         model_id = "mistralai/Mistral-7B-Instruct-v0.3"
         quantization_config = BitsAndBytesConfig(
@@ -182,17 +186,22 @@ def generate_metadata(url: str):
 
         tokenizer = AutoTokenizer.from_pretrained(model_id, token=HF_TOKEN)
 
-        scene_objects_with_llm_data=get_metadata_from_keyframe_file( path_to_keyframes_csv=keyframes_csv ,scene_objects= scene_objects_with_extraction_data,tasks=tasks)
-        create_scene_caption_with_audio_of_scene(model,tokenizer,subtitles, keyframes_csv,llm_caption_csv,scene_csv)
-        scene_objects_with_llm_data=set_new_content_for_metadata_attribute_for_scene_objects(path_to_keyframes_csv= llm_caption_csv ,scene_objects= scene_objects_with_extraction_data, attribute="Caption")
-        create_key_concept_for_scene_with_audio_of_scene(model,tokenizer,subtitles, keyframes_csv,llm_key_concepts_csv,scene_csv)
-        scene_objects_with_llm_data=set_new_content_for_metadata_attribute_for_scene_objects(path_to_keyframes_csv=llm_key_concepts_csv, scene_objects= scene_objects_with_extraction_data, attribute="KEY-CONCEPTS")
-        description=create_video_caption(model,tokenizer, subtitles,llm_caption_csv)
-        video_json=create_lom_caption_with_just_scenes_List(model,tokenizer, subtitles,llm_caption_csv)
+        print(3)
 
+        scene_objects_with_llm_data = get_metadata_from_keyframe_file( path_to_keyframes_csv=keyframes_csv ,scene_objects= scene_objects_with_extraction_data,tasks=tasks)
+        create_scene_caption_with_audio_of_scene(model,tokenizer,subtitles, keyframes_csv,llm_caption_csv,scene_csv)
+        scene_objects_with_llm_data = set_new_content_for_metadata_attribute_for_scene_objects(path_to_keyframes_csv= llm_caption_csv ,scene_objects= scene_objects_with_extraction_data, attribute="Caption")
+        create_key_concept_for_scene_with_audio_of_scene(model,tokenizer,subtitles, keyframes_csv,llm_key_concepts_csv,scene_csv)
+        scene_objects_with_llm_data = set_new_content_for_metadata_attribute_for_scene_objects(path_to_keyframes_csv=llm_key_concepts_csv, scene_objects= scene_objects_with_extraction_data, attribute="KEY-CONCEPTS")
+        description=create_video_caption(model,tokenizer, subtitles,llm_caption_csv)
+        video_json = create_lom_caption_with_just_scenes_List(model,tokenizer, subtitles,llm_caption_csv)
+
+        print(4)
 
         metaDataObject=MetaDataObject(url, downloader.yt, scene_objects_with_llm_data)
         metaDataObject.llm_description=description
+
+        print(5)
 
         for key, value in video_json.items():
           setattr(metaDataObject, key.lower().replace(" ", "_"), value)
@@ -201,9 +210,12 @@ def generate_metadata(url: str):
             outfile.write(metaDataObject.to_json())
             print(metaDataObject.to_json())
 
+        print(6)
+
         return {"message": "Metadata extraction completed successfully"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise Exception(e)
+        #raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/pipeline")

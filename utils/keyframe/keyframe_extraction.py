@@ -10,10 +10,6 @@ from Katna.writer import KeyFrameDiskWriter
 from katna_custom.custom_writer import TimeStampDiskWriter
 from katna_custom.custom_video_extraction import CustomVideo
 from utils.constants import VIDEO_DIR
-# VIDEO_DIR = Path(__file__).resolve().parent.parent.parent / 'videos'
-
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-print(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 def time_string_to_milliseconds(time_str):
@@ -80,7 +76,6 @@ def get_column_values_from_csv(
     return column_values
 
 
-# TODO currently not supporting Windows OS multiprocessing
 def extract_keyframe(
     video_file_path: str,
     output_dir: str,
@@ -249,6 +244,7 @@ def merge_csv(
 
     # Select only the desired columns from the merged DataFrame and save it to a new CSV file
     final_df = merged_df[['Filename', 'Source Filename','Timestamp Local (ms)', 'Timestamp Local (hh:mm:ss.SSS)','Timestamp Global (ms)', 'Timestamp Global (hh:mm:ss.SSS)']]
+    final_df.drop_duplicates()
     final_df.to_csv(merged_csv_filepath, index=False, columns=['Filename', 'Source Filename', 'Timestamp Local (ms)', 'Timestamp Local (hh:mm:ss.SSS)','Timestamp Global (ms)', 'Timestamp Global (hh:mm:ss.SSS)'])
 
     print("Merged CSV file saved at:", merged_csv_filepath)

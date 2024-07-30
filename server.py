@@ -147,8 +147,6 @@ def generate_metadata(url: str):
         downloader = YouTubeVideo(url)
         subtitles = downloader.download_subtitles()
 
-        print(1)
-
         tasks = {
             "CAPTION": "Caption the scene. Describe the contents and likely topics with as much detail as possible.",
             "KEY-CONCEPTS": "What are the key-concepts outlined in this scene?",
@@ -167,8 +165,6 @@ def generate_metadata(url: str):
         
         scene_objects_with_extraction_data=get_metadata_from_scene_file(path_to_scene_csv=scene_csv)
 
-        print(2)
-        
         model_id = "mistralai/Mistral-7B-Instruct-v0.3"
         quantization_config = BitsAndBytesConfig(
             load_in_4bit=True,
@@ -186,8 +182,6 @@ def generate_metadata(url: str):
 
         tokenizer = AutoTokenizer.from_pretrained(model_id, token=HF_TOKEN)
 
-        print(3)
-
         scene_objects_with_llm_data = get_metadata_from_keyframe_file( path_to_keyframes_csv=keyframes_csv ,scene_objects= scene_objects_with_extraction_data,tasks=tasks)
         create_scene_caption_with_audio_of_scene(model,tokenizer,subtitles, keyframes_csv,llm_caption_csv,scene_csv)
         scene_objects_with_llm_data = set_new_content_for_metadata_attribute_for_scene_objects(path_to_keyframes_csv= llm_caption_csv ,scene_objects= scene_objects_with_extraction_data, attribute="Caption")
@@ -196,12 +190,8 @@ def generate_metadata(url: str):
         description=create_video_caption(model,tokenizer, subtitles,llm_caption_csv)
         video_json = create_lom_caption_with_just_scenes_List(model,tokenizer, subtitles,llm_caption_csv)
 
-        print(4)
-
         metaDataObject=MetaDataObject(url, downloader.yt, scene_objects_with_llm_data)
         metaDataObject.llm_description=description
-
-        print(5)
 
         for key, value in video_json.items():
           setattr(metaDataObject, key.lower().replace(" ", "_"), value)
@@ -209,8 +199,6 @@ def generate_metadata(url: str):
         with open(f'{VIDEO_DIR}/{title}.json', 'w') as outfile:
             outfile.write(metaDataObject.to_json())
             print(metaDataObject.to_json())
-
-        print(6)
 
         return {"message": "Metadata extraction completed successfully"}
     except Exception as e:

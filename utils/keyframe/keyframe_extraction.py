@@ -1,8 +1,7 @@
 import os
+import sys
 import csv
 import glob
-import time
-from typing import Optional
 from pathlib import Path
 import pandas as pd
 
@@ -10,9 +9,50 @@ import pandas as pd
 from Katna.writer import KeyFrameDiskWriter
 from katna_custom.custom_writer import TimeStampDiskWriter
 from katna_custom.custom_video_extraction import CustomVideo
-from utils.keyframe.utils import time_string_to_milliseconds, milliseconds_to_time_string
-
 from utils.constants import VIDEO_DIR
+
+
+def time_string_to_milliseconds(time_str):
+    """
+    Converts a time string in the format 'hh:mm:ss.sss' to milliseconds.
+    Parameters:
+    time_str (str): The time string to be converted.
+    Returns:
+    int: The total number of milliseconds.
+    Example:
+    >>> time_string_to_milliseconds('01:23:45.678')
+    5025678
+    """
+    # Split the time string into hours, minutes, seconds, and milliseconds
+    hours, minutes, seconds_milliseconds = time_str.split(':')
+    seconds, milliseconds = seconds_milliseconds.split('.')
+
+    # Convert each component to milliseconds and sum them up
+    total_milliseconds = (int(hours) * 3600 + int(minutes) * 60 + int(seconds)) * 1000 + int(milliseconds)
+
+    return total_milliseconds
+
+
+def milliseconds_to_time_string(milliseconds):
+    """
+    Converts milliseconds to a formatted time string in the format hh:mm:ss.SSS.
+    Args:
+        milliseconds (int): The number of milliseconds to convert.
+    Returns:
+        str: The formatted time string in the format hh:mm:ss.SSS.
+    """
+    # Convert milliseconds to seconds
+    total_seconds = milliseconds / 1000
+
+    # Extract hours, minutes, seconds, and milliseconds
+    hours, remainder = divmod(total_seconds, 3600)
+    minutes, remainder = divmod(remainder, 60)
+    seconds, milliseconds = divmod(remainder, 1)
+
+    # Format the components into hh:mm:ss.SSS format
+    time_string = f"{int(hours):02d}:{int(minutes):02d}:{int(seconds):02d}.{int(milliseconds * 1000):03d}"
+
+    return time_string
 
 
 def get_column_values_from_csv(
@@ -21,11 +61,9 @@ def get_column_values_from_csv(
 ) -> list:
     """
     Get all the values in a column from a CSV file.
-
     Args:
         csv_file_path (str): The path to the CSV file.
         column_name (str): The name of the column to extract the values from.
-
     Returns:
         list: A list of values from the specified column.
     """
@@ -38,7 +76,6 @@ def get_column_values_from_csv(
     return column_values
 
 
-# TODO currently not supporting Windows OS multiprocessing
 def extract_keyframe(
     video_file_path: str,
     output_dir: str,
@@ -46,12 +83,10 @@ def extract_keyframe(
 ) -> None:
     """
     Extracts keyframes from a video file and saves them to the specified output directory.
-
     Args:
         video_file_path (str): The path to the video file.
         output_dir (str): The directory to save the keyframes. If not provided, keyframes will be saved in the same directory as the video file.
         no_of_frames_to_return (int, optional): The number of keyframes to extract. Defaults to 1.
-
     Returns:
         None
     """
@@ -62,7 +97,7 @@ def extract_keyframe(
     # Initialize diskwriter to save data at desired location
     frame_diskwriter = KeyFrameDiskWriter(location=output_dir)
     timestamp_diskwriter = TimeStampDiskWriter(location=output_dir)
-    
+
     # Extract keyframes and process data with diskwriter
     vd.extract_video_keyframes(
         no_of_frames=no_of_frames_to_return,
@@ -80,7 +115,6 @@ def process_all_videos(
 ):
     """
     Process all videos in the given list by extracting keyframes.
-
     Args:
         video_name (str): The name of the video.
         video_files (list): A list of video files to process.
@@ -107,16 +141,14 @@ def generate_keyframes_from_scenes(
 ) -> str:
     """
     Generate keyframes from scenes in a video.
-
     Args:
         video_name (str): The name of the video.
         no_of_frames_to_return (int, optional): The number of keyframes to return per scene. Defaults to 1.
-
     Returns:
         str: The path to the generated keyframe CSV file.
     """
     print("VIDEO_DIR:", VIDEO_DIR)
-    
+
 
 
     scenes_csv_input_file = Path(VIDEO_DIR) / f"{video_name}_scenes" / "scene_list.csv"
@@ -147,10 +179,8 @@ def generate_csv_file_paths(
 ) -> list:
     """
     Generate a list of all CSV files in the specific keyframe folders
-
     Args:
     keyframes_csv_input_dir (str): The directory containing the keyframe CSV files.
-
     Returns:
     list: A list of all CSV files in the specific keyframe folders.
     """
@@ -165,15 +195,12 @@ def merge_csv(
 ) -> str:
     """
     Creates a CSV file containing keyframe data by combining multiple CSV files and merging them with scene information.
-
     Args:
         keyframes_csv_input_dir (str): The directory path where the keyframe CSV files are located. Default is "videos/keyframes".
         scenes_csv_input_file (str): The file path of the scene list CSV file. Default is "videos/video_scenes/scene_list.csv".
         output_file (str): The file path of the output CSV file. Default is "videos/keyframes/extracted_keyframes.csv".
-
     Returns:
         str: The file path of the output CSV file.
-
     """
 
     csv_dir = Path(VIDEO_DIR) / f"{video_name}_keyframes"
@@ -217,6 +244,7 @@ def merge_csv(
 
     # Select only the desired columns from the merged DataFrame and save it to a new CSV file
     final_df = merged_df[['Filename', 'Source Filename','Timestamp Local (ms)', 'Timestamp Local (hh:mm:ss.SSS)','Timestamp Global (ms)', 'Timestamp Global (hh:mm:ss.SSS)']]
+    final_df.drop_duplicates()
     final_df.to_csv(merged_csv_filepath, index=False, columns=['Filename', 'Source Filename', 'Timestamp Local (ms)', 'Timestamp Local (hh:mm:ss.SSS)','Timestamp Global (ms)', 'Timestamp Global (hh:mm:ss.SSS)'])
 
     print("Merged CSV file saved at:", merged_csv_filepath)
@@ -224,17 +252,16 @@ def merge_csv(
     return merged_csv_filepath
 
 
-if __name__ == "__main__":
+def main():
 
-    start_time = time.time()
-
-    video_name = "Rust in 100 Seconds"
+    video_name = sys.argv[1]
+    no_of_frames_to_return = int(sys.argv[2])
 
     keyframe_csv_path = generate_keyframes_from_scenes(
         video_name=video_name,
-        no_of_frames_to_return=1
+        no_of_frames_to_return=no_of_frames_to_return
     )
 
-    end_time = time.time()
-    execution_time = end_time - start_time
-    print(f"Execution time: {execution_time} seconds")
+
+if __name__ == "__main__":
+    main()

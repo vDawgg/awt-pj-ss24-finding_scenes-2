@@ -1,10 +1,9 @@
-from typing import Tuple
-import os
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
 from utils.constants import HF_TOKEN
 
+import os
+import torch
+from typing import Tuple
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 def init_model(model_id: str, cache_dir: str = "./model_cache", **kwargs) -> Tuple[AutoModelForCausalLM, AutoTokenizer]:
     """
@@ -49,6 +48,16 @@ def init_model(model_id: str, cache_dir: str = "./model_cache", **kwargs) -> Tup
 
 
 class Model:
+    """ 
+    A class representing a model for caption alignment and metadata generation.
+
+    Attributes:
+        model_id (str): The ID of the model.
+        model (AutoModelForCausalLM): The pretrained model for caption generation.
+        tokenizer (AutoTokenizer): The tokenizer for the model.
+        prompt (str): The prompt for generating captions.
+        
+    """
     def __init__(self, model_id: str, **kwargs):
         """
         Initializes a Model object.

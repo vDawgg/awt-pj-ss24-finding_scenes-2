@@ -1,8 +1,4 @@
-from PIL import Image
-import requests
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
 from utils.model.model import Model
 
 
@@ -47,17 +43,3 @@ class CaptionModel(Model):
         """
         return self.model.answer_question(enc_image, prompt, self.tokenizer)
 
-
-if __name__ == "__main__":
-    model_id = "vikhyatk/moondream2"
-    revision = "2024-05-20"
-    image_url = "https://llava-vl.github.io/static/images/view.jpg"
-    image = Image.open(requests.get(image_url, stream=True).raw)
-
-    model = CaptionModel(model_id, revision=revision)
-
-    enc_image = model.encode_image(image)
-
-    prompt_response = model.run_inference(enc_image, model.prompt)
-
-    print(prompt_response)
